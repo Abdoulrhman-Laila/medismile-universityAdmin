@@ -183,10 +183,10 @@ export default function LoginPage() {
   const isLocked = Boolean(lockUntil && lockRemainingSeconds > 0);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-background text-text">
-      <div className="flex min-h-screen">
+    <div dir="rtl" className="h-dvh overflow-hidden bg-background text-text">
+      <div className="flex h-full min-h-0">
         {/* Brand panel — right side in RTL */}
-        <aside className="relative hidden w-[44%] max-w-xl overflow-hidden bg-primary px-10 py-12 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
+        <aside className="relative hidden h-full w-[44%] max-w-xl overflow-hidden bg-primary px-10 py-8 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
           {/* Soft brand shapes (same palette only) */}
           <motion.div
             aria-hidden
@@ -279,7 +279,7 @@ export default function LoginPage() {
         </aside>
 
         {/* Form panel */}
-        <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-10 sm:px-6">
+        <main className="relative flex h-full min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-6 sm:px-6">
           <div className="absolute top-4 end-4 z-20 sm:top-6 sm:end-6">
             <ToggleTheme />
           </div>

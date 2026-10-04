@@ -168,23 +168,26 @@ export default function AppLayout({ children }) {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div
+      className={`flex flex-col bg-background ${
+        hideLayout ? "h-dvh overflow-hidden" : "min-h-screen"
+      }`}
+    >
       <PageLoader loading={loading} hasSidebar={!hideLayout} />
 
       {!hideLayout && <Sidebar />}
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-200
-          ${hideLayout ? "w-full" : ""}
-          ${
-            !hideLayout
-              ? "lg:ms-64 ms-0"
-              : ""
-          }`}
+        className={`flex min-h-0 flex-1 flex-col transition-all duration-200
+          ${hideLayout ? "h-full w-full overflow-hidden" : "min-h-screen"}
+          ${!hideLayout ? "ms-0 lg:ms-64" : ""}`}
       >
         <main
-          className={`flex-1 px-4 md:px-6 pb-4 md:pb-6
-            ${!hideLayout ? "pt-28 lg:pt-16" : "pt-0"}`}
+          className={`min-h-0 flex-1 ${
+            hideLayout
+              ? "h-full overflow-hidden p-0"
+              : "px-4 pb-4 pt-28 md:px-6 md:pb-6 lg:pt-16"
+          }`}
         >
           {!hideLayout && <Navbar />}
           <AnimatedWrapper>{children}</AnimatedWrapper>

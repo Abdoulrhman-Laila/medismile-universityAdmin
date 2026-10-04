@@ -48,6 +48,7 @@ export const fetchFaculties = async (universityId) => {
  * POST /api/universities/faculties/
  * الصلاحيات: IsAuthenticated + IsUniversityAdmin
  * الحقول:
+ * - university: (uuid) - معرف الجامعة
  * - name: (string) - اسم الكلية
  * - description: (string) - الوصف
  * - is_active: (boolean) - نشط/غير نشط
@@ -163,12 +164,22 @@ export const deleteProgram = async (universityId, programId) => {
  * الصلاحيات: IsAuthenticated + IsUniversityAdmin
  * Query params: ?university=<university_id> أو يتم التعرف تلقائياً من Token
  */
+const unwrapList = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  if (Array.isArray(payload.results)) return payload.results;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.data?.results)) return payload.data.results;
+  return [];
+};
+
 export const fetchAcademicYears = async (universityId) => {
   const response = await apiClient.get(
     `/universities/academic-years/`,
     { params: { university: universityId } }
   );
-  return response.data?.data || response.data;
+  const body = response.data?.data ?? response.data;
+  return unwrapList(body).length ? unwrapList(body) : unwrapList(response.data);
 };
 
 /**
@@ -186,7 +197,11 @@ export const createAcademicYear = async (payload) => {
     `/universities/academic-years/`,
     payload
   );
-  return response.data?.data || response.data;
+  const body = response.data?.data ?? response.data;
+  if (body?.academic_year && typeof body.academic_year === "object") {
+    return body.academic_year;
+  }
+  return body;
 };
 
 /**

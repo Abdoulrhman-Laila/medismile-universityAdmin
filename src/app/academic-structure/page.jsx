@@ -36,6 +36,28 @@ import { Building2, GraduationCap, School, CalendarDays, BookOpen, Plus, Edit, T
 import toast from "react-hot-toast";
 import apiClient from "@/services/api";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function asUuid(value) {
+  if (typeof value === "string" && UUID_RE.test(value)) return value;
+  if (value && typeof value === "object") {
+    return asUuid(value.id) || asUuid(value.uuid) || asUuid(value.pk);
+  }
+  return "";
+}
+
+function getYearId(year) {
+  if (!year) return "";
+  if (typeof year === "string") return asUuid(year);
+  return (
+    asUuid(year.academic_year_id) ||
+    asUuid(year.academic_year) ||
+    asUuid(year.uuid) ||
+    asUuid(year.id)
+  );
+}
+
 /**
  * صفحة البنية الأكاديمية
  * متاحة فقط لإدارة الجامعة
@@ -69,7 +91,7 @@ function AcademicStructureContent() {
   // Forms state
   const [facultyForm, setFacultyForm] = useState({ name: "", description: "", is_active: true });
   const [programForm, setProgramForm] = useState({ name: "", code: "", faculty: "", level: "bachelor", duration_years: "", description: "" });
-  const [yearForm, setYearForm] = useState({ name: "", start_date: "", end_date: "", description: "", is_active: false });
+  const [yearForm, setYearForm] = useState({ name: "", start_date: "", end_date: "", description: "", is_active: true });
   const [universityForm, setUniversityForm] = useState({ name: "", address: "", phone: "", email: "" });
   const [courseForm, setCourseForm] = useState({ 
     name: "", 
@@ -102,12 +124,14 @@ function AcademicStructureContent() {
       setLoading(true);
 
       // جلب universityId من user object (تم إضافته بعد Login)
-      let universityId = user?.university_id || user?.university;
-      
-      // إذا لم يكن موجوداً، قد يكون object
-      if (!universityId && user?.university && typeof user.university === 'object') {
-        universityId = user.university.id;
-      }
+      const readId = (value) => {
+        if (!value) return "";
+        if (typeof value === "string") return value;
+        if (typeof value === "object") return value.id || value.uuid || "";
+        return "";
+      };
+
+      let universityId = readId(user?.university_id) || readId(user?.university);
 
       // إذا لم يكن هناك universityId، نجرب جلب Profile من API (fallback)
       if (!universityId && user?.id && (user?.role === "university_admin" || user?.role === "college_admin")) {
@@ -212,6 +236,7 @@ function AcademicStructureContent() {
 
     try {
       const newFaculty = await createFaculty({
+        university: universityId,
         name: facultyForm.name,
         description: facultyForm.description || "",
         is_active: facultyForm.is_active !== undefined ? facultyForm.is_active : true,
@@ -269,9 +294,13 @@ function AcademicStructureContent() {
         start_date: yearForm.start_date,
         end_date: yearForm.end_date,
         description: yearForm.description,
+        is_active: true,
       });
 
-      setAcademicYears([...academicYears, newYear]);
+      const years = await fetchAcademicYears(universityId).catch(() => []);
+      setAcademicYears(
+        Array.isArray(years) && years.length ? years : [...academicYears, newYear]
+      );
       setYearForm({ name: "", start_date: "", end_date: "", description: "" });
       toast.success("تم إنشاء السنة الأكاديمية بنجاح");
 
@@ -439,13 +468,24 @@ function AcademicStructureContent() {
       return;
     }
 
+    const academicYearId = getYearId(courseForm.academic_year);
+    const selectedYear = academicYears.find((year) => getYearId(year) === academicYearId);
+    if (academicYearId && selectedYear?.is_active === false) {
+      toast.error("هذه السنة غير نشطة. فعّلها من تبويب السنوات ثم أعد إضافة المقرر.");
+      return;
+    }
+    if (academicYearId && academicYearId === universityId) {
+      toast.error("السنة المختارة غير صالحة. أعد اختيار السنة الأكاديمية.");
+      return;
+    }
+
     try {
       // بناء البيانات المرسلة - نرسل جميع الحقول بما في ذلك المشرف والطلاب
       // ملاحظة: لا نرسل حقل university - الـ API يستخرجه تلقائياً من Token
       const courseData = {
         name: courseForm.name.trim(),
         code: courseForm.code.trim(),
-        academic_year: courseForm.academic_year || null,
+        academic_year: getYearId(courseForm.academic_year) || null,
         program: courseForm.program || null,
         supervisor: courseForm.supervisor || null,
         students: courseForm.students && courseForm.students.length > 0 ? courseForm.students : [],
@@ -532,7 +572,7 @@ function AcademicStructureContent() {
     setCourseForm({
       name: course.name || "",
       code: course.code || "",
-      academic_year: course.academic_year || "",
+      academic_year: getYearId(course.academic_year) || "",
       program: course.program || "",
       supervisor: supervisorId,
       students: course.students || [],
@@ -550,7 +590,7 @@ function AcademicStructureContent() {
       const updated = await updateCourse(editingCourse.id, {
         name: courseForm.name,
         code: courseForm.code,
-        academic_year: courseForm.academic_year || null,
+        academic_year: getYearId(courseForm.academic_year) || null,
         program: courseForm.program || null,
         supervisor: courseForm.supervisor || null,
         students: courseForm.students || [],
@@ -823,7 +863,7 @@ function AcademicStructureContent() {
                       <label className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          checked={facultyForm.is_active}
+                          checked={facultyForm.is_active ?? true}
                           onChange={(e) =>
                             setFacultyForm({ ...facultyForm, is_active: e.target.checked })
                           }
@@ -1244,7 +1284,7 @@ function AcademicStructureContent() {
               <button
                 onClick={() => {
                   setEditingFaculty(null);
-                  setFacultyForm({ name: "", code: "", description: "" });
+                  setFacultyForm({ name: "", description: "", is_active: true });
                 }}
                 className="rounded-lg p-2 transition-colors hover:bg-primary-muted"
                 aria-label="Close"
@@ -1286,7 +1326,7 @@ function AcademicStructureContent() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={facultyForm.is_active}
+                    checked={facultyForm.is_active ?? true}
                     onChange={(e) =>
                       setFacultyForm({ ...facultyForm, is_active: e.target.checked })
                     }
@@ -1620,11 +1660,16 @@ function AcademicStructureContent() {
                         className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       >
                         <option value="">اختر السنة الأكاديمية</option>
-                        {academicYears.map((year) => (
-                          <option key={year.id} value={year.id}>
-                            {year.name}
-                          </option>
-                        ))}
+                        {academicYears.map((year) => {
+                          const yearId = getYearId(year);
+                          if (!yearId || yearId === universityId) return null;
+                          return (
+                            <option key={yearId} value={yearId}>
+                              {year.name}
+                              {year.is_active === false ? " (غير نشطة)" : ""}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     <div>
@@ -1919,11 +1964,16 @@ function AcademicStructureContent() {
                     className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="">اختر السنة الأكاديمية</option>
-                    {academicYears.map((year) => (
-                      <option key={year.id} value={year.id}>
-                        {year.name}
-                      </option>
-                    ))}
+                    {academicYears.map((year) => {
+                      const yearId = getYearId(year);
+                      if (!yearId || yearId === universityId) return null;
+                      return (
+                        <option key={yearId} value={yearId}>
+                          {year.name}
+                          {year.is_active === false ? " (غير نشطة)" : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div>
