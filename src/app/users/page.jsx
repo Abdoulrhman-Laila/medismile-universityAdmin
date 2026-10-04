@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useRtl } from "@/hooks/useRtl";
 import RoleGuard from "@/components/RoleGuard";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import { Button, Card, CardContent } from "@/components/ui";
 import Link from "next/link";
-import { Users, GraduationCap, UserCheck } from "lucide-react";
+import { GraduationCap, UserCheck, ArrowLeft, ArrowRight } from "lucide-react";
 
 /**
  * صفحة إدارة المستخدمين الرئيسية
@@ -25,6 +25,7 @@ function UsersContent() {
   const { t } = useTranslation();
   const isRtl = useRtl();
   const router = useRouter();
+  const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
   const tabs = [
     {
@@ -45,72 +46,67 @@ function UsersContent() {
 
   return (
     <AnimatedWrapper>
-      <div className={`p-6 sm:p-8 space-y-8 ${isRtl ? "text-right" : "text-left"}`}>
+      <div className={`space-y-8 p-6 sm:p-8 ${isRtl ? "text-right" : "text-left"}`}>
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            {t("Users.title")}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-            {t("Users.description")}
-          </p>
+        <div className="space-y-1">
+          <h1 className="text-h1 text-text">{t("Users.title")}</h1>
+          <p className="text-body-sm text-text-secondary">{t("Users.description")}</p>
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
           {tabs.map((tab) => {
             const TabIcon = tab.icon;
 
             return (
-              <Link
-                key={tab.id}
-                href={tab.href}
-                className="block group"
-              >
-                <div className="p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-slate-200 dark:border-slate-700 hover:border-sky-500 dark:hover:border-sky-500">
+              <Link key={tab.id} href={tab.href} className="group block">
+                <Card
+                  elevated
+                  className="h-full border-border transition-colors duration-200 group-hover:border-primary/40 group-hover:bg-surface-elevated"
+                >
                   <div className="flex items-center gap-4">
-                    <div className="p-3.5 bg-sky-50 dark:bg-sky-900/30 rounded-xl group-hover:bg-sky-100 dark:group-hover:bg-sky-900/40 transition-colors">
-                      <TabIcon className="h-7 w-7 text-sky-600 dark:text-sky-400" />
+                    <div className="rounded-lg bg-primary-muted p-3.5 text-primary transition-colors group-hover:bg-primary/15">
+                      <TabIcon className="h-6 w-6" aria-hidden />
                     </div>
-                    <div className="flex-1">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1.5">
-                        {tab.name}
-                      </h2>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {tab.description}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <h2 className="text-h3 text-text">{tab.name}</h2>
+                        <ArrowIcon
+                          className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary"
+                          aria-hidden
+                        />
+                      </div>
+                      <CardContent className="p-0">{tab.description}</CardContent>
                     </div>
                   </div>
-                </div>
+                </Card>
               </Link>
             );
           })}
         </div>
 
         {/* Quick Actions */}
-        <div className="p-5 sm:p-6 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-200 dark:border-sky-800">
-          <h2 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">
-            {t("Users.quickActions")}
-          </h2>
+        <Card className="border-border bg-primary-muted/40">
+          <h2 className="mb-4 text-h3 text-text">{t("Users.quickActions")}</h2>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/users/students?action=create"
-              className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 inline-flex items-center gap-2 font-semibold text-sm shadow-sm hover:shadow-md"
+            <Button
+              onClick={() => router.push("/users/students?action=create")}
+              className="inline-flex"
             >
               <GraduationCap size={18} />
               {t("Users.addStudent")}
-            </Link>
-            <Link
-              href="/users/supervisors?action=create"
-              className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 inline-flex items-center gap-2 font-semibold text-sm shadow-sm hover:shadow-md"
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/users/supervisors?action=create")}
+              className="inline-flex"
             >
               <UserCheck size={18} />
               {t("Users.addSupervisor")}
-            </Link>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     </AnimatedWrapper>
   );
 }
-

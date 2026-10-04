@@ -595,8 +595,8 @@ function AcademicStructureContent() {
       <AnimatedWrapper>
         <div className={`p-6 ${isRtl ? "text-right" : "text-left"}`}>
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-            <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            <div className="h-8 w-1/3 rounded bg-border"></div>
+            <div className="h-64 rounded bg-border"></div>
           </div>
         </div>
       </AnimatedWrapper>
@@ -633,19 +633,19 @@ function AcademicStructureContent() {
 
   return (
     <AnimatedWrapper>
-      <div className={`p-6 sm:p-8 space-y-8 ${isRtl ? "text-right" : "text-left"}`}>
+      <div className={`min-h-screen space-y-8 bg-background p-4 sm:p-6 lg:p-8 ${isRtl ? "text-right" : "text-left"}`}>
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="mb-2 text-h1 text-text">
             {t("AcademicStructure.title")}
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+          <p className="text-body-sm text-text-secondary sm:text-base">
             {t("AcademicStructure.description")}
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-slate-200 dark:border-slate-700">
+        <div className="border-b border-border">
           <nav className={`flex ${isRtl ? "space-x-reverse" : ""} space-x-6 overflow-x-auto`} aria-label="Tabs">
             {tabs.map((tab) => {
               const TabIcon = tab.icon;
@@ -657,8 +657,8 @@ function AcademicStructureContent() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 py-4 px-2 border-b-2 font-semibold text-sm transition-all duration-200 whitespace-nowrap ${
                     isActive
-                      ? "border-sky-500 text-sky-600 dark:text-sky-400"
-                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted hover:border-border hover:text-text"
                   }`}
                 >
                   <TabIcon size={18} />
@@ -675,11 +675,11 @@ function AcademicStructureContent() {
           {activeTab === "universities" && (
             <div className="space-y-6">
               {university ? (
-                  <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+                  <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                    <h2 className="mb-5 text-h3 text-text">
                       {university.name}
                     </h2>
-                    <div className="space-y-3 text-slate-700 dark:text-slate-300">
+                    <div className="space-y-3 text-text-secondary">
                       {university.code && (
                         <p className="flex items-center gap-2">
                           <span className="font-semibold">الرمز:</span> 
@@ -707,17 +707,17 @@ function AcademicStructureContent() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">لا توجد بيانات الجامعة</p>
+                  <p className="py-8 text-center text-body-sm text-muted">لا توجد بيانات الجامعة</p>
                 )}
 
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                  <h2 className="mb-5 text-h3 text-text">
                     تحديث بيانات الجامعة
                   </h2>
                   <form onSubmit={handleUpdateUniversity} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           الاسم
                         </label>
                         <input
@@ -726,11 +726,11 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setUniversityForm({ ...universityForm, name: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           العنوان
                         </label>
                         <input
@@ -739,11 +739,11 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setUniversityForm({ ...universityForm, address: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           الهاتف
                         </label>
                         <input
@@ -752,11 +752,11 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setUniversityForm({ ...universityForm, phone: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           البريد الإلكتروني
                         </label>
                         <input
@@ -765,14 +765,14 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setUniversityForm({ ...universityForm, email: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                     </div>
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="pt-4 border-t border-border">
                       <button
                         type="submit"
-                        className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                        className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                       >
                         حفظ التغييرات
                       </button>
@@ -785,14 +785,14 @@ function AcademicStructureContent() {
           {/* Faculties Tab */}
           {activeTab === "faculties" && (
             <div className="space-y-6">
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                  <h2 className="mb-5 text-h3 text-text">
                     إضافة كلية جديدة
                   </h2>
                   <form onSubmit={handleCreateFaculty} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           اسم الكلية *
                         </label>
                         <input
@@ -802,12 +802,12 @@ function AcademicStructureContent() {
                             setFacultyForm({ ...facultyForm, name: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الوصف
                       </label>
                       <textarea
@@ -816,7 +816,7 @@ function AcademicStructureContent() {
                           setFacultyForm({ ...facultyForm, description: e.target.value })
                         }
                         rows={3}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                       />
                     </div>
                     <div>
@@ -827,17 +827,17 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setFacultyForm({ ...facultyForm, is_active: e.target.checked })
                           }
-                          className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                         />
-                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        <span className="text-caption font-semibold text-muted">
                           الكلية نشطة
                         </span>
                       </label>
                     </div>
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="pt-4 border-t border-border">
                       <button
                         type="submit"
-                        className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                        className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                       >
                         إضافة كلية
                       </button>
@@ -845,8 +845,8 @@ function AcademicStructureContent() {
                   </form>
                 </div>
 
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                <h2 className="mb-5 text-h3 text-text">
                   قائمة الكليات ({faculties.length})
                 </h2>
                 {faculties.length > 0 ? (
@@ -854,19 +854,19 @@ function AcademicStructureContent() {
                     {faculties.map((faculty) => (
                       <div
                         key={faculty.id}
-                        className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center justify-between rounded-lg border border-border p-4 transition-colors hover:bg-primary-muted/30"
                       >
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                          <p className="mb-1 font-semibold text-text">
                             {faculty.name}
                           </p>
                           {faculty.code && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-body-sm text-muted">
                               رمز: {faculty.code}
                             </p>
                           )}
                           {faculty.description && (
-                            <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                            <p className="mt-2 text-body-sm text-text-secondary">
                               {faculty.description}
                             </p>
                           )}
@@ -874,7 +874,7 @@ function AcademicStructureContent() {
                         <div className={`flex gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
                           <button
                             onClick={() => handleEditFaculty(faculty)}
-                            className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
+                            className="rounded-lg p-2 text-primary transition-all duration-200 hover:bg-primary-muted"
                             title="تعديل"
                             aria-label="Edit"
                           >
@@ -889,7 +889,7 @@ function AcademicStructureContent() {
                                 name: faculty.name,
                               })
                             }
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                            className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all duration-200"
                             title="حذف"
                             aria-label="Delete"
                           >
@@ -900,7 +900,7 @@ function AcademicStructureContent() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">لا توجد كليات</p>
+                  <p className="py-8 text-center text-body-sm text-muted">لا توجد كليات</p>
                 )}
               </div>
             </div>
@@ -909,14 +909,14 @@ function AcademicStructureContent() {
           {/* Programs Tab */}
           {activeTab === "programs" && (
             <div className="space-y-6">
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                  <h2 className="mb-5 text-h3 text-text">
                     إضافة برنامج أكاديمي جديد
                   </h2>
                   <form onSubmit={handleCreateProgram} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           اسم البرنامج *
                         </label>
                         <input
@@ -926,11 +926,11 @@ function AcademicStructureContent() {
                             setProgramForm({ ...programForm, name: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           رمز البرنامج *
                         </label>
                         <input
@@ -940,11 +940,11 @@ function AcademicStructureContent() {
                             setProgramForm({ ...programForm, code: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           الكلية
                         </label>
                         <select
@@ -952,7 +952,7 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setProgramForm({ ...programForm, faculty: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         >
                           <option value="">اختر كلية</option>
                           {faculties.map((faculty) => (
@@ -963,7 +963,7 @@ function AcademicStructureContent() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           المستوى الأكاديمي *
                         </label>
                         <select
@@ -972,7 +972,7 @@ function AcademicStructureContent() {
                             setProgramForm({ ...programForm, level: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         >
                           <option value="bachelor">بكالوريوس</option>
                           <option value="master">ماجستير</option>
@@ -982,7 +982,7 @@ function AcademicStructureContent() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           مدة البرنامج (بالسنوات)
                         </label>
                         <input
@@ -991,12 +991,12 @@ function AcademicStructureContent() {
                           onChange={(e) =>
                             setProgramForm({ ...programForm, duration_years: e.target.value })
                           }
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الوصف
                       </label>
                       <textarea
@@ -1005,13 +1005,13 @@ function AcademicStructureContent() {
                           setProgramForm({ ...programForm, description: e.target.value })
                         }
                         rows={3}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                       />
                     </div>
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="pt-4 border-t border-border">
                       <button
                         type="submit"
-                        className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                        className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                       >
                         إضافة برنامج
                       </button>
@@ -1019,8 +1019,8 @@ function AcademicStructureContent() {
                   </form>
                 </div>
 
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                <h2 className="mb-5 text-h3 text-text">
                   قائمة البرامج الأكاديمية ({programs.length})
                 </h2>
                 {programs.length > 0 ? (
@@ -1028,24 +1028,24 @@ function AcademicStructureContent() {
                     {programs.map((program) => (
                       <div
                         key={program.id}
-                        className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center justify-between rounded-lg border border-border p-4 transition-colors hover:bg-primary-muted/30"
                       >
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                          <p className="mb-1 font-semibold text-text">
                             {program.name}
                           </p>
                           {program.code && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-body-sm text-muted">
                               رمز: {program.code}
                             </p>
                           )}
                           {program.level && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-body-sm text-muted">
                               المستوى: {program.level}
                             </p>
                           )}
                           {program.description && (
-                            <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                            <p className="mt-2 text-body-sm text-text-secondary">
                               {program.description}
                             </p>
                           )}
@@ -1053,7 +1053,7 @@ function AcademicStructureContent() {
                         <div className={`flex gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
                           <button
                             onClick={() => handleEditProgram(program)}
-                            className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
+                            className="rounded-lg p-2 text-primary transition-all duration-200 hover:bg-primary-muted"
                             title="تعديل"
                             aria-label="Edit"
                           >
@@ -1068,7 +1068,7 @@ function AcademicStructureContent() {
                                 name: program.name,
                               })
                             }
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                            className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all duration-200"
                             title="حذف"
                             aria-label="Delete"
                           >
@@ -1079,7 +1079,7 @@ function AcademicStructureContent() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">لا توجد برامج أكاديمية</p>
+                  <p className="py-8 text-center text-body-sm text-muted">لا توجد برامج أكاديمية</p>
                 )}
               </div>
             </div>
@@ -1088,14 +1088,14 @@ function AcademicStructureContent() {
           {/* Academic Years Tab */}
           {activeTab === "years" && (
             <div className="space-y-6">
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                  <h2 className="mb-5 text-h3 text-text">
                     إضافة سنة أكاديمية جديدة
                   </h2>
                   <form onSubmit={handleCreateAcademicYear} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           اسم السنة *
                         </label>
                         <input
@@ -1106,11 +1106,11 @@ function AcademicStructureContent() {
                           }
                           placeholder="مثال: 2024-2025"
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           تاريخ البداية *
                         </label>
                         <input
@@ -1120,11 +1120,11 @@ function AcademicStructureContent() {
                             setYearForm({ ...yearForm, start_date: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="mb-2 block text-caption font-semibold text-muted">
                           تاريخ النهاية *
                         </label>
                         <input
@@ -1134,12 +1134,12 @@ function AcademicStructureContent() {
                             setYearForm({ ...yearForm, end_date: e.target.value })
                           }
                           required
-                          className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                          className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الوصف
                       </label>
                       <textarea
@@ -1148,13 +1148,13 @@ function AcademicStructureContent() {
                           setYearForm({ ...yearForm, description: e.target.value })
                         }
                         rows={3}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                       />
                     </div>
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="pt-4 border-t border-border">
                       <button
                         type="submit"
-                        className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                        className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                       >
                         إضافة سنة أكاديمية
                       </button>
@@ -1162,8 +1162,8 @@ function AcademicStructureContent() {
                   </form>
                 </div>
 
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                <h2 className="mb-5 text-h3 text-text">
                   قائمة السنوات الأكاديمية ({academicYears.length})
                 </h2>
                 {academicYears.length > 0 ? (
@@ -1171,34 +1171,34 @@ function AcademicStructureContent() {
                     {academicYears.map((year) => (
                       <div
                         key={year.id}
-                        className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="rounded-lg border border-border p-4 transition-colors hover:bg-primary-muted/30"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                            <p className="mb-1 font-semibold text-text">
                               {year.name}
                             </p>
                             {year.start_date && year.end_date && (
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
+                              <p className="text-body-sm text-muted">
                                 من {new Date(year.start_date).toLocaleDateString("ar-SA")} إلى{" "}
                                 {new Date(year.end_date).toLocaleDateString("ar-SA")}
                               </p>
                             )}
                             {year.description && (
-                              <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                              <p className="mt-2 text-body-sm text-text-secondary">
                                 {year.description}
                               </p>
                             )}
                           </div>
                           <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
                             {year.is_active && (
-                              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs font-semibold">
+                              <span className="px-3 py-1 bg-success/15 text-success rounded-full text-xs font-semibold">
                                 نشطة
                               </span>
                             )}
                             <button
                               onClick={() => handleEditYear(year)}
-                              className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
+                              className="rounded-lg p-2 text-primary transition-all duration-200 hover:bg-primary-muted"
                               title="تعديل"
                               aria-label="Edit"
                             >
@@ -1213,7 +1213,7 @@ function AcademicStructureContent() {
                                   name: year.name,
                                 })
                               }
-                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all duration-200"
                               title="حذف"
                               aria-label="Delete"
                             >
@@ -1225,7 +1225,7 @@ function AcademicStructureContent() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">لا توجد سنوات أكاديمية</p>
+                  <p className="py-8 text-center text-body-sm text-muted">لا توجد سنوات أكاديمية</p>
                 )}
               </div>
             </div>
@@ -1236,9 +1236,9 @@ function AcademicStructureContent() {
       {/* Edit Faculty Modal */}
       {editingFaculty && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+              <h2 className="text-h3 text-text">
                 تعديل الكلية
               </h2>
               <button
@@ -1246,7 +1246,7 @@ function AcademicStructureContent() {
                   setEditingFaculty(null);
                   setFacultyForm({ name: "", code: "", description: "" });
                 }}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-primary-muted"
                 aria-label="Close"
               >
                 <X size={20} />
@@ -1255,7 +1255,7 @@ function AcademicStructureContent() {
             <form onSubmit={handleUpdateFaculty} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     اسم الكلية *
                   </label>
                   <input
@@ -1265,12 +1265,12 @@ function AcademicStructureContent() {
                       setFacultyForm({ ...facultyForm, name: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-caption font-semibold text-muted">
                   الوصف
                 </label>
                 <textarea
@@ -1279,7 +1279,7 @@ function AcademicStructureContent() {
                     setFacultyForm({ ...facultyForm, description: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                 />
               </div>
               <div>
@@ -1290,27 +1290,27 @@ function AcademicStructureContent() {
                     onChange={(e) =>
                       setFacultyForm({ ...facultyForm, is_active: e.target.checked })
                     }
-                    className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                   />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="text-caption font-semibold text-muted">
                     الكلية نشطة
                   </span>
                 </label>
               </div>
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-3 justify-end pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => {
                     setEditingFaculty(null);
                     setFacultyForm({ name: "", description: "", is_active: true });
                   }}
-                  className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
+                  className="rounded-md border border-border px-5 py-2.5 text-body-sm font-semibold text-text-secondary transition-all hover:bg-primary-muted"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                  className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                 >
                   حفظ التغييرات
                 </button>
@@ -1323,9 +1323,9 @@ function AcademicStructureContent() {
       {/* Edit Program Modal */}
       {editingProgram && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+              <h2 className="text-h3 text-text">
                 تعديل البرنامج الأكاديمي
               </h2>
               <button
@@ -1333,7 +1333,7 @@ function AcademicStructureContent() {
                   setEditingProgram(null);
                   setProgramForm({ name: "", code: "", faculty: "", level: "bachelor", duration_years: "", description: "" });
                 }}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-primary-muted"
                 aria-label="Close"
               >
                 <X size={20} />
@@ -1342,7 +1342,7 @@ function AcademicStructureContent() {
             <form onSubmit={handleUpdateProgram} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     اسم البرنامج *
                   </label>
                   <input
@@ -1352,11 +1352,11 @@ function AcademicStructureContent() {
                       setProgramForm({ ...programForm, name: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     رمز البرنامج *
                   </label>
                   <input
@@ -1366,11 +1366,11 @@ function AcademicStructureContent() {
                       setProgramForm({ ...programForm, code: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     الكلية
                   </label>
                   <select
@@ -1378,7 +1378,7 @@ function AcademicStructureContent() {
                     onChange={(e) =>
                       setProgramForm({ ...programForm, faculty: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="">اختر كلية</option>
                     {faculties.map((faculty) => (
@@ -1389,7 +1389,7 @@ function AcademicStructureContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     المستوى الأكاديمي *
                   </label>
                   <select
@@ -1398,7 +1398,7 @@ function AcademicStructureContent() {
                       setProgramForm({ ...programForm, level: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="bachelor">بكالوريوس</option>
                     <option value="master">ماجستير</option>
@@ -1408,7 +1408,7 @@ function AcademicStructureContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     مدة البرنامج (بالسنوات)
                   </label>
                   <input
@@ -1417,12 +1417,12 @@ function AcademicStructureContent() {
                     onChange={(e) =>
                       setProgramForm({ ...programForm, duration_years: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-caption font-semibold text-muted">
                   الوصف
                 </label>
                 <textarea
@@ -1431,23 +1431,23 @@ function AcademicStructureContent() {
                     setProgramForm({ ...programForm, description: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                 />
               </div>
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-3 justify-end pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => {
                     setEditingProgram(null);
                     setProgramForm({ name: "", code: "", faculty: "", level: "bachelor", duration_years: "", description: "" });
                   }}
-                  className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
+                  className="rounded-md border border-border px-5 py-2.5 text-body-sm font-semibold text-text-secondary transition-all hover:bg-primary-muted"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                  className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                 >
                   حفظ التغييرات
                 </button>
@@ -1460,9 +1460,9 @@ function AcademicStructureContent() {
       {/* Edit Academic Year Modal */}
       {editingYear && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+              <h2 className="text-h3 text-text">
                 تعديل السنة الأكاديمية
               </h2>
               <button
@@ -1470,7 +1470,7 @@ function AcademicStructureContent() {
                   setEditingYear(null);
                   setYearForm({ name: "", start_date: "", end_date: "", description: "", is_active: false });
                 }}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-primary-muted"
                 aria-label="Close"
               >
                 <X size={20} />
@@ -1479,7 +1479,7 @@ function AcademicStructureContent() {
             <form onSubmit={handleUpdateYear} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     اسم السنة *
                   </label>
                   <input
@@ -1490,11 +1490,11 @@ function AcademicStructureContent() {
                     }
                     placeholder="مثال: 2024-2025"
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     تاريخ البداية *
                   </label>
                   <input
@@ -1504,11 +1504,11 @@ function AcademicStructureContent() {
                       setYearForm({ ...yearForm, start_date: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     تاريخ النهاية *
                   </label>
                   <input
@@ -1518,12 +1518,12 @@ function AcademicStructureContent() {
                       setYearForm({ ...yearForm, end_date: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-caption font-semibold text-muted">
                   الوصف
                 </label>
                 <textarea
@@ -1532,7 +1532,7 @@ function AcademicStructureContent() {
                     setYearForm({ ...yearForm, description: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                 />
               </div>
               <div>
@@ -1543,27 +1543,27 @@ function AcademicStructureContent() {
                     onChange={(e) =>
                       setYearForm({ ...yearForm, is_active: e.target.checked })
                     }
-                    className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                   />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="text-caption font-semibold text-muted">
                     السنة الأكاديمية النشطة
                   </span>
                 </label>
               </div>
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-3 justify-end pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => {
                     setEditingYear(null);
                     setYearForm({ name: "", start_date: "", end_date: "", description: "", is_active: false });
                   }}
-                  className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
+                  className="rounded-md border border-border px-5 py-2.5 text-body-sm font-semibold text-text-secondary transition-all hover:bg-primary-muted"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                  className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                 >
                   حفظ التغييرات
                 </button>
@@ -1578,14 +1578,14 @@ function AcademicStructureContent() {
             <div className="space-y-6">
               {/* Create Course Form */}
               {!editingCourse && (
-                <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                  <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+                <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                  <h2 className="mb-5 text-h3 text-text">
                     إضافة مقرر جديد
                   </h2>
                   <form onSubmit={handleCreateCourse} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         اسم المقرر *
                       </label>
                       <input
@@ -1594,11 +1594,11 @@ function AcademicStructureContent() {
                         onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
                         placeholder="مثال: تشخيص الأسنان"
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         كود المقرر *
                       </label>
                       <input
@@ -1607,17 +1607,17 @@ function AcademicStructureContent() {
                         onChange={(e) => setCourseForm({ ...courseForm, code: e.target.value })}
                         placeholder="مثال: DENT-301"
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         السنة الأكاديمية
                       </label>
                       <select
                         value={courseForm.academic_year}
                         onChange={(e) => setCourseForm({ ...courseForm, academic_year: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       >
                         <option value="">اختر السنة الأكاديمية</option>
                         {academicYears.map((year) => (
@@ -1628,13 +1628,13 @@ function AcademicStructureContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         البرنامج
                       </label>
                       <select
                         value={courseForm.program}
                         onChange={(e) => setCourseForm({ ...courseForm, program: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       >
                         <option value="">اختر البرنامج</option>
                         {programs.map((program) => (
@@ -1645,13 +1645,13 @@ function AcademicStructureContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         المشرف
                       </label>
                       <select
                         value={courseForm.supervisor}
                         onChange={(e) => setCourseForm({ ...courseForm, supervisor: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       >
                         <option value="">اختر المشرف</option>
                         {supervisors.map((supervisor) => (
@@ -1662,7 +1662,7 @@ function AcademicStructureContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         عدد الساعات المعتمدة
                       </label>
                       <input
@@ -1671,20 +1671,20 @@ function AcademicStructureContent() {
                         onChange={(e) => setCourseForm({ ...courseForm, credits: e.target.value })}
                         placeholder="مثال: 3"
                         min="0"
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-caption font-semibold text-muted">
                       الطلاب
                     </label>
-                    <div className="max-h-48 overflow-y-auto border border-slate-300 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-dark">
+                    <div className="max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface">
                       {students.length === 0 ? (
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">لا توجد طلاب متاحين</p>
+                        <p className="text-muted text-sm">لا توجد طلاب متاحين</p>
                       ) : (
                         students.map((student) => (
-                          <label key={student.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded cursor-pointer">
+                          <label key={student.id} className="flex items-center gap-2 p-2 hover:bg-primary-muted/30 rounded cursor-pointer">
                             <input
                               type="checkbox"
                               checked={courseForm.students.includes(student.id)}
@@ -1695,9 +1695,9 @@ function AcademicStructureContent() {
                                   setCourseForm({ ...courseForm, students: courseForm.students.filter((id) => id !== student.id) });
                                 }
                               }}
-                              className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                              className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                             />
-                            <span className="text-sm text-slate-700 dark:text-slate-300">
+                            <span className="text-sm text-text-secondary">
                               {student.first_name} {student.last_name} ({student.email})
                             </span>
                           </label>
@@ -1706,7 +1706,7 @@ function AcademicStructureContent() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-caption font-semibold text-muted">
                       الوصف
                     </label>
                     <textarea
@@ -1714,7 +1714,7 @@ function AcademicStructureContent() {
                       onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                       placeholder="مثال: مادة سريرية"
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                      className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                     />
                   </div>
                   <div>
@@ -1723,17 +1723,17 @@ function AcademicStructureContent() {
                         type="checkbox"
                         checked={courseForm.is_active}
                         onChange={(e) => setCourseForm({ ...courseForm, is_active: e.target.checked })}
-                        className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                       />
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-caption font-semibold text-muted">
                         المقرر نشط
                       </span>
                     </label>
                   </div>
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="pt-4 border-t border-border">
                     <button
                       type="submit"
-                      className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                      className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                     >
                       إضافة المقرر
                     </button>
@@ -1743,43 +1743,43 @@ function AcademicStructureContent() {
               )}
 
               {/* Courses List */}
-              <div className="p-5 sm:p-6 bg-white dark:bg-dark-light rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold mb-5 text-slate-900 dark:text-white">
+              <div className="p-5 sm:p-6 rounded-xl border border-border bg-surface shadow-sm">
+                <h2 className="mb-5 text-h3 text-text">
                   قائمة المقررات
                 </h2>
                 {courses.length === 0 ? (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">لا توجد مقررات</p>
+                  <p className="py-8 text-center text-body-sm text-muted">لا توجد مقررات</p>
                 ) : (
                   <div className="space-y-3">
                     {courses.map((course) => (
                       <div
                         key={course.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                        className="p-4 bg-background rounded-lg border border-border hover:bg-primary-muted transition-all duration-200"
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <h3 className="font-bold text-slate-900 dark:text-white mb-1">
+                            <h3 className="font-bold text-text mb-1">
                               {course.name}
                             </h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                            <p className="text-sm text-muted mb-2">
                               <span className="font-semibold">الكود:</span> {course.code}
                               {course.credits && (
                                 <> | <span className="font-semibold">الساعات:</span> {course.credits}</>
                               )}
                             </p>
                             {course.description && (
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              <p className="text-sm text-muted mb-2">
                                 {course.description}
                               </p>
                             )}
-                            <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <div className="flex flex-wrap gap-2 text-xs text-muted">
                               {course.academic_year && (
-                                <span className="px-2 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded">
+                                <span className="rounded bg-primary/15 px-2 py-1 text-primary">
                                   السنة: {academicYears.find((y) => y.id === course.academic_year)?.name || course.academic_year}
                                 </span>
                               )}
                               {course.program && (
-                                <span className="px-2 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded">
+                                <span className="rounded bg-primary/15 px-2 py-1 text-primary">
                                   البرنامج: {programs.find((p) => p.id === course.program)?.name || course.program}
                                 </span>
                               )}
@@ -1804,18 +1804,18 @@ function AcademicStructureContent() {
                                 
                                 // عرض المشرف إذا كان هناك نص للعرض
                                 return displayText ? (
-                                  <span className="px-2 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded">
+                                  <span className="rounded bg-primary/15 px-2 py-1 text-primary">
                                     المشرف: {displayText}
                                   </span>
                                 ) : null;
                               })()}
                               {course.students && course.students.length > 0 && (
-                                <span className="px-2 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded flex items-center gap-1">
+                                <span className="rounded bg-primary/15 px-2 py-1 text-primary flex items-center gap-1">
                                   <Users size={14} />
                                   {course.students.length} طالب
                                 </span>
                               )}
-                              <span className={`px-2 py-1 rounded ${course.is_active ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                              <span className={`px-2 py-1 rounded ${course.is_active ? "bg-success/15 text-success" : "bg-primary-muted text-muted"}`}>
                                 {course.is_active ? "نشط" : "غير نشط"}
                               </span>
                             </div>
@@ -1823,7 +1823,7 @@ function AcademicStructureContent() {
                           <div className={`flex gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
                             <button
                               onClick={() => handleEditCourse(course)}
-                              className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
+                              className="rounded-lg p-2 text-primary transition-all duration-200 hover:bg-primary-muted"
                               title="تعديل"
                               aria-label="Edit"
                             >
@@ -1838,7 +1838,7 @@ function AcademicStructureContent() {
                                   name: course.name,
                                 })
                               }
-                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all duration-200"
                               title="حذف"
                               aria-label="Delete"
                             >
@@ -1857,9 +1857,9 @@ function AcademicStructureContent() {
       {/* Edit Course Modal */}
       {editingCourse && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
-            <div className={`flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse" : ""}`}>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
+            <div className={`flex items-center justify-between mb-6 pb-4 border-b border-border ${isRtl ? "flex-row-reverse" : ""}`}>
+              <h2 className="text-h3 text-text">
                 تعديل المقرر
               </h2>
               <button
@@ -1877,7 +1877,7 @@ function AcademicStructureContent() {
                     is_active: true 
                   });
                 }}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-primary-muted"
                 aria-label="Close"
               >
                 <X size={20} />
@@ -1886,7 +1886,7 @@ function AcademicStructureContent() {
             <form onSubmit={handleUpdateCourse} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     اسم المقرر *
                   </label>
                   <input
@@ -1894,11 +1894,11 @@ function AcademicStructureContent() {
                     value={courseForm.name}
                     onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     كود المقرر *
                   </label>
                   <input
@@ -1906,17 +1906,17 @@ function AcademicStructureContent() {
                     value={courseForm.code}
                     onChange={(e) => setCourseForm({ ...courseForm, code: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     السنة الأكاديمية
                   </label>
                   <select
                     value={courseForm.academic_year}
                     onChange={(e) => setCourseForm({ ...courseForm, academic_year: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="">اختر السنة الأكاديمية</option>
                     {academicYears.map((year) => (
@@ -1927,13 +1927,13 @@ function AcademicStructureContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     البرنامج
                   </label>
                   <select
                     value={courseForm.program}
                     onChange={(e) => setCourseForm({ ...courseForm, program: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="">اختر البرنامج</option>
                     {programs.map((program) => (
@@ -1944,13 +1944,13 @@ function AcademicStructureContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     المشرف
                   </label>
                   <select
                     value={courseForm.supervisor}
                     onChange={(e) => setCourseForm({ ...courseForm, supervisor: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   >
                     <option value="">اختر المشرف</option>
                     {supervisors.map((supervisor) => (
@@ -1961,7 +1961,7 @@ function AcademicStructureContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-caption font-semibold text-muted">
                     عدد الساعات المعتمدة
                   </label>
                   <input
@@ -1969,20 +1969,20 @@ function AcademicStructureContent() {
                     value={courseForm.credits}
                     onChange={(e) => setCourseForm({ ...courseForm, credits: e.target.value })}
                     min="0"
-                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-caption font-semibold text-muted">
                   الطلاب
                 </label>
-                <div className="max-h-48 overflow-y-auto border border-slate-300 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-dark">
+                <div className="max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface">
                   {students.length === 0 ? (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">لا توجد طلاب متاحين</p>
+                    <p className="text-muted text-sm">لا توجد طلاب متاحين</p>
                   ) : (
                     students.map((student) => (
-                      <label key={student.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded cursor-pointer">
+                      <label key={student.id} className="flex items-center gap-2 p-2 hover:bg-primary-muted/30 rounded cursor-pointer">
                         <input
                           type="checkbox"
                           checked={courseForm.students.includes(student.id)}
@@ -1993,9 +1993,9 @@ function AcademicStructureContent() {
                               setCourseForm({ ...courseForm, students: courseForm.students.filter((id) => id !== student.id) });
                             }
                           }}
-                          className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                         />
-                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                        <span className="text-sm text-text-secondary">
                           {student.first_name} {student.last_name} ({student.email})
                         </span>
                       </label>
@@ -2004,14 +2004,14 @@ function AcademicStructureContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-caption font-semibold text-muted">
                   الوصف
                 </label>
                 <textarea
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25 resize-none"
                 />
               </div>
               <div>
@@ -2020,14 +2020,14 @@ function AcademicStructureContent() {
                     type="checkbox"
                     checked={courseForm.is_active}
                     onChange={(e) => setCourseForm({ ...courseForm, is_active: e.target.checked })}
-                    className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                   />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="text-caption font-semibold text-muted">
                     المقرر نشط
                   </span>
                 </label>
               </div>
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-3 justify-end pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => {
@@ -2044,13 +2044,13 @@ function AcademicStructureContent() {
                       is_active: true 
                     });
                   }}
-                  className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
+                  className="rounded-md border border-border px-5 py-2.5 text-body-sm font-semibold text-text-secondary transition-all hover:bg-primary-muted"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                  className="rounded-md bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md"
                 >
                   حفظ التغييرات
                 </button>
@@ -2063,23 +2063,23 @@ function AcademicStructureContent() {
       {/* Delete Confirmation Modal */}
       {deleteConfirm.show && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+          <div className="bg-surface rounded-xl shadow-xl max-w-md w-full p-6 sm:p-8 border border-border">
+            <h2 className="text-h3 text-text mb-4">
               تأكيد الحذف
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
+            <p className="text-muted mb-6">
               هل أنت متأكد من حذف {deleteConfirm.type === "faculty" ? "الكلية" : deleteConfirm.type === "program" ? "البرنامج" : deleteConfirm.type === "year" ? "السنة الأكاديمية" : "المقرر"}{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
+              <span className="font-semibold text-text">
                 "{deleteConfirm.name}"
               </span>
               ؟
             </p>
-            <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex gap-3 justify-end pt-4 border-t border-border">
               <button
                 onClick={() =>
                   setDeleteConfirm({ show: false, type: "", id: "", name: "" })
                 }
-                className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
+                className="rounded-md border border-border px-5 py-2.5 text-body-sm font-semibold text-text-secondary transition-all hover:bg-primary-muted"
               >
                 إلغاء
               </button>
@@ -2095,7 +2095,7 @@ function AcademicStructureContent() {
                     handleDeleteCourse();
                   }
                 }}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
+                className="rounded-md bg-danger px-5 py-2.5 text-body-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
               >
                 حذف
               </button>

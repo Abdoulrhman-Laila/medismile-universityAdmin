@@ -3,9 +3,15 @@
 import AnimatedWrapper from "@/components/AnimatedWrapper";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useRtl } from "@/hooks/useRtl";
+import { UserRound, Save } from "lucide-react";
+import { Button, Input, Card } from "@/components/ui";
+
+const labelClass = "mb-1.5 block text-caption font-semibold text-muted";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const isRtl = useRtl();
   const [currentUser, setCurrentUser] = useState(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,6 +19,7 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user")); // توحيد المفتاح
@@ -38,6 +45,7 @@ export default function SettingsPage() {
     if (!currentUser) return;
 
     if (newPassword && currentPassword !== currentUser.password) {
+      setMessageType("danger");
       setMessage(t("Settings.wrongPassword"));
       return;
     }
@@ -60,104 +68,127 @@ export default function SettingsPage() {
 
     window.dispatchEvent(new Event("user-login"));
 
+    setMessageType("success");
     setMessage(t("Settings.savedSuccessfully"));
   };
 
   if (!currentUser)
     return (
-      <div className="flex justify-center items-center h-full mt-20">
-        <p className="text-slate-600 dark:text-slate-400">
-          {t("Settings.pleaseLogin")}
-        </p>
+      <div className={`flex h-full items-center justify-center px-4 mt-20 ${isRtl ? "text-right" : "text-left"}`}>
+        <Card className="max-w-md w-full text-center">
+          <p className="text-body-sm text-muted">
+            {t("Settings.pleaseLogin")}
+          </p>
+        </Card>
       </div>
     );
 
+  const initial =
+    (fullName && fullName[0]?.toUpperCase()) ||
+    (email && email[0]?.toUpperCase()) ||
+    "U";
+
   return (
     <AnimatedWrapper>
-    <div className="max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-xl shadow p-4 sm:p-6 mt-4 sm:mt-6 border border-sky-200 dark:border-slate-700">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-blue-900 dark:text-white">{t("Settings.title")}</h2>
+      <div className={`p-4 sm:p-6 lg:p-8 ${isRtl ? "text-right" : "text-left"}`}>
+        <div className="mx-auto max-w-3xl space-y-6">
+          <div className="space-y-1">
+            <h1 className="text-h1 text-text">{t("Settings.title")}</h1>
+            <p className="text-body-sm text-text-secondary">
+              {t("Settings.description") || "إدارة بيانات الملف الشخصي"}
+            </p>
+          </div>
 
-      {message && (
-        <p className="text-green-600 font-semibold mb-4">{message}</p>
-      )}
+          <Card>
+            {message ? (
+              <div
+                className={`mb-5 rounded-md border px-4 py-3 text-body-sm font-medium ${
+                  messageType === "danger"
+                    ? "border-danger/40 bg-danger/10 text-danger"
+                    : "border-success/30 bg-success/10 text-success"
+                }`}
+              >
+                {message}
+              </div>
+            ) : null}
 
-      <form onSubmit={handleSave} className="space-y-4">
-        <div className="flex items-center gap-4">
-          {profileImage ? (
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="w-20 h-20 rounded-full border-2 border-blue-500 object-cover"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold text-white">
-              {fullName ? fullName[0].toUpperCase() : email[0].toUpperCase()}
-            </div>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="text-sm"
-          />
+            <form onSubmit={handleSave} className="space-y-5">
+              <div className={`flex flex-col gap-4 sm:flex-row sm:items-center ${isRtl ? "sm:flex-row-reverse" : ""}`}>
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-20 w-20 rounded-lg border-2 border-primary object-cover"
+                  />
+                ) : (
+                  <div className="inline-flex h-20 w-20 items-center justify-center rounded-lg bg-primary text-2xl font-bold text-primary-foreground">
+                    {initial}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1 space-y-2">
+                  <label className={labelClass}>
+                    <span className={`inline-flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+                      <UserRound size={14} className="text-primary" aria-hidden />
+                      {t("Settings.profileImage") || "صورة الملف الشخصي"}
+                    </span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="block w-full text-caption text-text-secondary file:me-3 file:rounded-md file:border-0 file:bg-primary-muted file:px-3 file:py-2 file:text-caption file:font-semibold file:text-primary hover:file:bg-primary/15"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass}>{t("Settings.fullName")}</label>
+                <Input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>{t("Settings.email")}</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass}>{t("Settings.currentPassword")}</label>
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>{t("Settings.newPassword")}</label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <Button type="submit">
+                  <Save size={18} />
+                  {t("Settings.saveChanges")}
+                </Button>
+              </div>
+            </form>
+          </Card>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("Settings.fullName")}
-          </label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border border-sky-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("Settings.email")}
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border border-sky-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("Settings.currentPassword")}
-          </label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border border-sky-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("Settings.newPassword")}
-          </label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border border-sky-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 transition"
-        >
-          {t("Settings.saveChanges")}
-        </button>
-      </form>
-    </div>
+      </div>
     </AnimatedWrapper>
   );
 }

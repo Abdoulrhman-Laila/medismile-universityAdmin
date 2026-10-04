@@ -14,6 +14,19 @@ import {
 } from "@/redux/features/supervisors/supervisorsSlice";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
 import RoleGuard from "@/components/RoleGuard";
+import {
+  Button,
+  Input,
+  Badge,
+  DataTable,
+  DataTableHead,
+  DataTableTh,
+  DataTableBody,
+  DataTableRow,
+  DataTableTd,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import toast from "react-hot-toast";
 import { useRtl } from "@/hooks/useRtl";
 import { fetchUniversityDetails, fetchUniversityAdminProfile } from "@/services/universityApi";
@@ -352,33 +365,34 @@ function SupervisorsPageContent() {
     <AnimatedWrapper>
       <div className={`p-6 sm:p-8 space-y-6 ${isRtl ? "text-right" : "text-left"}`}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-h1 text-text">
               إدارة المشرفين
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+            <p className="text-body-sm text-text-secondary">
               إدارة حسابات المشرفين في الجامعة
             </p>
           </div>
-          <button
-            onClick={handleAdd}
-            className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap"
-          >
-            <PlusCircle size={20} />
+          <Button onClick={handleAdd} className="shrink-0 self-start sm:self-auto">
+            <PlusCircle size={18} />
             إضافة مشرف جديد
-          </button>
+          </Button>
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <Search className={`absolute ${isRtl ? "right-3" : "left-3"} top-1/2 transform -translate-y-1/2 text-slate-400`} size={20} />
-          <input
+        <div className="relative max-w-xl">
+          <Search
+            className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${isRtl ? "right-3" : "left-3"}`}
+            size={16}
+            aria-hidden
+          />
+          <Input
             type="text"
             placeholder="ابحث عن مشرف..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full ${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all`}
+            className={isRtl ? "pr-10" : "pl-10"}
           />
         </div>
 
@@ -397,11 +411,11 @@ function SupervisorsPageContent() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-surface shadow-xl"
             >
               <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+                  <h2 className="text-h3 text-text">
                     {editingSupervisor ? "تعديل مشرف" : "إضافة مشرف جديد"}
                   </h2>
                   <button
@@ -409,7 +423,7 @@ function SupervisorsPageContent() {
                       setShowForm(false);
                       setEditingSupervisor(null);
                     }}
-                    className="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="rounded-lg p-2 text-muted transition-colors hover:bg-primary-muted hover:text-text"
                     aria-label="Close"
                   >
                     <X size={24} />
@@ -419,7 +433,7 @@ function SupervisorsPageContent() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         اسم المستخدم *
                       </label>
                       <input
@@ -428,11 +442,11 @@ function SupervisorsPageContent() {
                         value={formData.username}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         البريد الإلكتروني *
                       </label>
                       <input
@@ -441,13 +455,13 @@ function SupervisorsPageContent() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     {!editingSupervisor && (
                       <>
                         <div>
-                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          <label className="mb-2 block text-caption font-semibold text-muted">
                             كلمة المرور *
                           </label>
                           <input
@@ -456,11 +470,11 @@ function SupervisorsPageContent() {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          <label className="mb-2 block text-caption font-semibold text-muted">
                             تأكيد كلمة المرور *
                           </label>
                           <input
@@ -469,13 +483,13 @@ function SupervisorsPageContent() {
                             value={formData.password_confirm}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                           />
                         </div>
                       </>
                     )}
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الاسم الأول *
                       </label>
                       <input
@@ -484,11 +498,11 @@ function SupervisorsPageContent() {
                         value={formData.first_name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         اسم العائلة *
                       </label>
                       <input
@@ -497,11 +511,11 @@ function SupervisorsPageContent() {
                         value={formData.last_name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         رقم الهاتف
                       </label>
                       <input
@@ -509,11 +523,11 @@ function SupervisorsPageContent() {
                         name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         العنوان
                       </label>
                       <input
@@ -521,11 +535,11 @@ function SupervisorsPageContent() {
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         تاريخ الميلاد
                       </label>
                       <input
@@ -533,18 +547,18 @@ function SupervisorsPageContent() {
                         name="date_of_birth"
                         value={formData.date_of_birth}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الجنس
                       </label>
                       <select
                         name="gender"
                         value={formData.gender}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       >
                         <option value="">اختر الجنس</option>
                         <option value="male">ذكر</option>
@@ -552,7 +566,7 @@ function SupervisorsPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         القسم
                       </label>
                       <input
@@ -560,11 +574,11 @@ function SupervisorsPageContent() {
                         name="department"
                         value={formData.department}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         المنصب
                       </label>
                       <input
@@ -572,11 +586,11 @@ function SupervisorsPageContent() {
                         name="position"
                         value={formData.position}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         رقم الرخصة
                       </label>
                       <input
@@ -584,39 +598,26 @@ function SupervisorsPageContent() {
                         name="license_number"
                         value={formData.license_number}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
-                    <button
+                  <div className="flex justify-end gap-3 border-t border-border pt-6">
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         setShowForm(false);
                         setEditingSupervisor(null);
                       }}
-                      className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
                     >
                       إلغاء
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitLoading}
-                      className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold text-sm shadow-sm hover:shadow-md"
-                    >
-                      {submitLoading ? (
-                        <>
-                          <Loader2 className="animate-spin" size={18} />
-                          جاري الحفظ...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={18} />
-                          حفظ
-                        </>
-                      )}
-                    </button>
+                    </Button>
+                    <Button type="submit" loading={submitLoading}>
+                      {!submitLoading ? <Save size={18} /> : null}
+                      حفظ
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -626,79 +627,82 @@ function SupervisorsPageContent() {
 
         {/* Supervisors Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-sky-600" size={32} />
-          </div>
+          <DataTableLoading />
         ) : filteredSupervisors.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+          <DataTableEmpty>
             {searchTerm ? "لا توجد نتائج للبحث" : "لا يوجد مشرفين"}
-          </div>
+          </DataTableEmpty>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border-2 border-sky-200/50 dark:border-dark-lighter shadow-2xl">
-            <table
-              className={`w-full text-sm text-slate-900 dark:text-slate-200 min-w-[900px] ${
-                isRtl ? "text-right" : "text-left"
-              }`}
-              dir={isRtl ? "rtl" : "ltr"}
-            >
-              <thead className="bg-gradient-to-r from-sky-700 via-sky-600 to-sky-700 dark:from-dark-lighter dark:via-dark-light dark:to-dark-lighter text-white">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">البريد الإلكتروني</th>
-                  <th className="px-6 py-4 font-semibold">اسم المستخدم</th>
-                  <th className="px-6 py-4 font-semibold">العنوان</th>
-                  <th className="px-6 py-4 font-semibold">رقم الهاتف</th>
-                  <th className="px-6 py-4 font-semibold">المنصب</th>
-                  <th className="px-6 py-4 font-semibold">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSupervisors.map((supervisor, idx) => {
-                  // استخراج اسم المستخدم من البريد الإلكتروني
-                  const username = supervisor.email ? supervisor.email.split("@")[0] : "-";
-                  
-                  return (
-                    <motion.tr
-                      key={supervisor.user_id || supervisor.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.02 }}
-                      className={`${
-                        idx % 2 === 0
-                          ? "bg-sky-50/50 dark:bg-dark-light/30"
-                          : "bg-white dark:bg-dark-light"
-                      } border-b border-sky-200/50 dark:border-dark-lighter hover:bg-gradient-to-r hover:from-sky-100/50 hover:to-sky-200/50 dark:hover:from-dark-lighter transition-all duration-300`}
-                    >
-                      <td className="px-6 py-4 font-medium">{supervisor.email || "-"}</td>
-                      <td className="px-6 py-4">{username}</td>
-                      <td className="px-6 py-4">{supervisor.address || "-"}</td>
-                      <td className="px-6 py-4">{supervisor.phone_number || "-"}</td>
-                      <td className="px-6 py-4">{supervisor.position || "-"}</td>
-                      <td className="px-6 py-4">
-                        <div className={`flex items-center gap-2 ${isRtl ? "justify-start" : "justify-end"}`}>
-                          <button
-                            onClick={() => handleEdit(supervisor)}
-                            className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
-                            title="تعديل"
-                            aria-label="Edit"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(supervisor.user_id || supervisor.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                            title="حذف"
-                            aria-label="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <DataTable dir={isRtl ? "rtl" : "ltr"} minWidth="900px">
+            <DataTableHead>
+              <tr>
+                <DataTableTh>البريد الإلكتروني</DataTableTh>
+                <DataTableTh>اسم المستخدم</DataTableTh>
+                <DataTableTh>العنوان</DataTableTh>
+                <DataTableTh>رقم الهاتف</DataTableTh>
+                <DataTableTh>المنصب</DataTableTh>
+                <DataTableTh className={isRtl ? "text-right" : "text-left"}>الإجراءات</DataTableTh>
+              </tr>
+            </DataTableHead>
+            <DataTableBody>
+              {filteredSupervisors.map((supervisor, idx) => {
+                // استخراج اسم المستخدم من البريد الإلكتروني
+                const username = supervisor.email ? supervisor.email.split("@")[0] : "-";
+                
+                return (
+                  <DataTableRow
+                    as={motion.tr}
+                    key={supervisor.user_id || supervisor.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.24) }}
+                  >
+                    <DataTableTd className="font-medium text-text">
+                      {supervisor.email || "-"}
+                    </DataTableTd>
+                    <DataTableTd className="text-text-secondary">{username}</DataTableTd>
+                    <DataTableTd className="text-text-secondary max-w-[220px] truncate">
+                      {supervisor.address || "-"}
+                    </DataTableTd>
+                    <DataTableTd className="text-text-secondary tabular-nums">
+                      {supervisor.phone_number || "-"}
+                    </DataTableTd>
+                    <DataTableTd>
+                      {supervisor.position ? (
+                        <Badge variant="primary">{supervisor.position}</Badge>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </DataTableTd>
+                    <DataTableTd>
+                      <div className={`flex items-center gap-1 ${isRtl ? "justify-start" : "justify-end"}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(supervisor)}
+                          className="h-9 w-9 px-0 text-primary hover:bg-primary-muted"
+                          title="تعديل"
+                          aria-label="Edit"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(supervisor.user_id || supervisor.id)}
+                          className="h-9 w-9 px-0 text-danger hover:bg-danger/10"
+                          title="حذف"
+                          aria-label="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </DataTableTd>
+                  </DataTableRow>
+                );
+              })}
+            </DataTableBody>
+          </DataTable>
         )}
       </div>
     </AnimatedWrapper>

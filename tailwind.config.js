@@ -7,32 +7,55 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['"Tajawal"', '"Segoe UI"', "system-ui", "-apple-system", "sans-serif"],
-      },
+      // Font + type scale live in src/app/globals.css (@theme / :root) — no duplicate values here
+      // Colors map to CSS variables only — hex lives in src/app/globals.css
       colors: {
-        // نظام الألوان الموحد: سماوي فاتح، سماوي غامق، أسود، أبيض
         sky: {
-          50: "#f0f9ff",   // سماوي فاتح جداً
-          100: "#e0f2fe", // سماوي فاتح
-          200: "#bae6fd", // سماوي فاتح متوسط
-          300: "#7dd3fc", // سماوي متوسط
-          400: "#38bdf8", // سماوي
-          500: "#0ea5e9", // سماوي قوي
-          600: "#0284c7", // سماوي غامق
-          700: "#0369a1", // سماوي غامق جداً
-          800: "#075985", // سماوي داكن
-          900: "#0c4a6e", // سماوي داكن جداً
+          50: "var(--brand-sky-50)",
+          100: "var(--brand-sky-100)",
+          200: "var(--brand-sky-200)",
+          300: "var(--brand-sky-300)",
+          400: "var(--brand-sky-400)",
+          500: "var(--brand-sky-500)",
+          600: "var(--brand-sky-600)",
+          700: "var(--brand-sky-700)",
+          800: "var(--brand-sky-800)",
+          900: "var(--brand-sky-900)",
         },
         dark: {
-          DEFAULT: "#0f172a", // slate-900 - أسود
-          light: "#1e293b",   // slate-800
-          lighter: "#334155",  // slate-700
+          DEFAULT: "var(--brand-dark)",
+          light: "var(--brand-dark-light)",
+          lighter: "var(--brand-dark-lighter)",
         },
         light: {
-          DEFAULT: "#ffffff",  // أبيض
-          gray: "#f8fafc",     // slate-50
+          DEFAULT: "var(--brand-light)",
+          gray: "var(--brand-light-gray)",
         },
+        primary: {
+          DEFAULT: "var(--ds-primary)",
+          hover: "var(--ds-primary-hover)",
+          muted: "var(--ds-primary-muted)",
+          foreground: "var(--ds-primary-foreground)",
+        },
+        background: "var(--ds-background)",
+        surface: {
+          DEFAULT: "var(--ds-surface)",
+          elevated: "var(--ds-surface-elevated)",
+        },
+        text: {
+          DEFAULT: "var(--ds-text)",
+          secondary: "var(--ds-text-secondary)",
+        },
+        muted: "var(--ds-muted)",
+        border: {
+          DEFAULT: "var(--ds-border)",
+          strong: "var(--ds-border-strong)",
+        },
+        ring: "var(--ds-ring)",
+        success: "var(--ds-success)",
+        warning: "var(--ds-warning)",
+        danger: "var(--ds-danger)",
+        info: "var(--ds-info)",
       },
       container: {
         center: true,
@@ -48,5 +71,3 @@ export default {
   },
   darkMode: ["class", 'selector([data-theme="dark"] &)'],
 };
-
-

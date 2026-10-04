@@ -3,26 +3,34 @@
  * يتضمن: Relevance Scoring, Field Weighting, Ranking Algorithm, Highlighting
  */
 
+import { createElement } from "react";
+
 /**
  * Field Weights محسّنة لكل نوع محتوى
  */
 const FIELD_WEIGHTS = {
   students: {
+    studentName: 12,
     first_name: 10,
     last_name: 10,
     email: 8,
     username: 7,
     student_id: 9,
-    specialization: 6
+    studentNumber: 9,
+    specialization: 6,
+    specialty: 6,
+    phone_number: 5,
   },
   supervisors: {
+    supervisorName: 12,
     first_name: 10,
     last_name: 10,
     email: 8,
     username: 7,
     department: 8,
     position: 7,
-    license_number: 9
+    license_number: 9,
+    phone_number: 5,
   },
   cases: {
     title: 10,
@@ -432,17 +440,20 @@ export const highlightMatch = (text, query) => {
  */
 export const highlightMatchReact = (text, query) => {
   if (!text || !query) return text;
-  
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${escapedQuery})`, 'gi');
-  const parts = text.split(regex);
-  
+
+  const escapedQuery = String(query).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = String(text).split(new RegExp(`(${escapedQuery})`, "gi"));
+  const matcher = new RegExp(`^${escapedQuery}$`, "i");
+
   return parts.map((part, index) => {
-    if (regex.test(part)) {
-      return (
-        <mark key={index} className="bg-yellow-300 dark:bg-yellow-600 px-0.5 rounded">
-          {part}
-        </mark>
+    if (part && matcher.test(part)) {
+      return createElement(
+        "mark",
+        {
+          key: index,
+          className: "rounded-sm bg-warning/30 px-0.5 text-text",
+        },
+        part
       );
     }
     return part;

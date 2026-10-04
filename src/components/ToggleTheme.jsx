@@ -13,7 +13,7 @@ export default function ToggleTheme() {
     // تطبيق التغيير فوراً قبل تحديث Redux
     const newTheme = theme === "light" ? "dark" : "light";
     const html = document.documentElement;
-    
+
     if (newTheme === "dark") {
       html.classList.add("dark");
       html.style.colorScheme = "dark";
@@ -21,41 +21,28 @@ export default function ToggleTheme() {
       html.classList.remove("dark");
       html.style.colorScheme = "light";
     }
-    
+
     // تحديث Redux
     dispatch(toggleTheme());
   };
 
   return (
     <motion.button
-      whileHover={{ scale: 1.1, rotate: theme === "light" ? 15 : -15 }}
-      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       onClick={handleToggle}
-      className={`p-2 rounded-full transition-all ${
-        theme === "dark"
-          ? "bg-yellow-100 hover:bg-yellow-200 text-yellow-600 dark:bg-yellow-900/30 dark:hover:bg-yellow-800/40 dark:text-yellow-400"
-          : "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
-      }`}
+      className={
+        "inline-flex h-9 w-9 items-center justify-center rounded-md border border-border " +
+        "bg-surface text-text-secondary transition-colors " +
+        "hover:bg-primary-muted hover:text-primary " +
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+      }
       title={theme === "light" ? "تفعيل الوضع الليلي" : "تفعيل الوضع النهاري"}
-      aria-label={theme === "light" ? "تفعيل الوضع الليلي" : "تفعيل الوضع النهاري"}
+      aria-label={
+        theme === "light" ? "تفعيل الوضع الليلي" : "تفعيل الوضع النهاري"
+      }
     >
-      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+      {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
     </motion.button>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

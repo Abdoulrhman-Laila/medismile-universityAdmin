@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, FileText, Download, Send, AlertCircle, Edit2, X, FileSpreadsheet } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Send, AlertCircle, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
 import RoleGuard from "@/components/RoleGuard";
+import { Button, Badge, Card } from "@/components/ui";
 import { useRtl } from "@/hooks/useRtl";
 import toast from "react-hot-toast";
 import {
   fetchReportByIdAsync,
-  updateReportAsync,
   submitReportAsync,
   exportReportAsync,
   clearError,
@@ -114,7 +114,7 @@ function ReportDetailsInner() {
       console.log("File URL from API:", fileUrl); // للتصحيح
 
       // بناء URL كامل للملف
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://medismile1-production.up.railway.app/api";
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.medismile.xn--mgbaab0cxheq.tech/api";
       let fullFileUrl = fileUrl;
       
       if (fileUrl.startsWith("/")) {
@@ -188,18 +188,30 @@ function ReportDetailsInner() {
 
   if (!mounted) {
     return (
-      <div className="p-4 sm:p-6 min-h-screen bg-sky-50 dark:bg-slate-900" />
+      <div className="min-h-screen bg-background p-4 sm:p-6" />
     );
   }
 
   const directionRtl = isRtl || i18n?.language === "ar";
 
+  const getStatusBadge = (status) => {
+    const map = {
+      draft: { label: "مسودة", variant: "warning" },
+      submitted: { label: "مقدمة", variant: "info" },
+      approved: { label: "موافق عليها", variant: "success" },
+      rejected: { label: "مرفوضة", variant: "danger" },
+      locked: { label: "مقفلة", variant: "default" },
+    };
+    const info = map[status] || { label: status, variant: "default" };
+    return <Badge variant={info.variant}>{info.label}</Badge>;
+  };
+
   if (loadingSelected && !report) {
     return (
       <AnimatedWrapper>
-        <div className={`p-4 sm:p-6 lg:p-8 min-h-screen ${directionRtl ? "text-right" : "text-left"}`}>
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="animate-spin text-sky-500" size={32} />
+        <div className={`min-h-screen p-4 sm:p-6 lg:p-8 ${directionRtl ? "text-right" : "text-left"}`}>
+          <div className="flex items-center justify-center py-14">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
           </div>
         </div>
       </AnimatedWrapper>
@@ -209,19 +221,12 @@ function ReportDetailsInner() {
   if (error && !report) {
     return (
       <AnimatedWrapper>
-        <div className={`p-4 sm:p-6 lg:p-8 min-h-screen ${directionRtl ? "text-right" : "text-left"}`}>
-          <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500/50 rounded-xl p-4 text-red-700 dark:text-red-400">
-            <div className="flex items-center gap-2">
-              <AlertCircle size={20} />
-              <span>{error}</span>
-            </div>
+        <div className={`min-h-screen space-y-4 p-4 sm:p-6 lg:p-8 ${directionRtl ? "text-right" : "text-left"}`}>
+          <div className="flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-body-sm text-danger">
+            <AlertCircle size={20} />
+            <span>{error}</span>
           </div>
-          <button
-            onClick={() => router.push("/reports")}
-            className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
-          >
-            العودة
-          </button>
+          <Button onClick={() => router.push("/reports")}>العودة</Button>
         </div>
       </AnimatedWrapper>
     );
@@ -230,14 +235,9 @@ function ReportDetailsInner() {
   if (!report) {
     return (
       <AnimatedWrapper>
-        <div className={`p-4 sm:p-6 lg:p-8 min-h-screen ${directionRtl ? "text-right" : "text-left"}`}>
-          <p className="text-slate-500 dark:text-slate-400">التقرير غير موجود</p>
-          <button
-            onClick={() => router.push("/reports")}
-            className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
-          >
-            العودة
-          </button>
+        <div className={`min-h-screen space-y-4 p-4 sm:p-6 lg:p-8 ${directionRtl ? "text-right" : "text-left"}`}>
+          <p className="text-body-sm text-muted">التقرير غير موجود</p>
+          <Button onClick={() => router.push("/reports")}>العودة</Button>
         </div>
       </AnimatedWrapper>
     );
@@ -273,73 +273,54 @@ function ReportDetailsInner() {
           directionRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="mx-auto max-w-3xl space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
-            <button
-              type="button"
-              onClick={() => router.push("/reports")}
-              className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-300 transition-colors"
-            >
-              <ArrowLeft size={18} />
-              <span>العودة إلى التقارير</span>
-            </button>
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => router.push("/reports")}
+            className={`px-0 text-primary hover:bg-transparent hover:text-primary-hover ${
+              directionRtl ? "flex-row-reverse" : ""
+            }`}
+          >
+            <ArrowLeft size={18} />
+            العودة إلى التقارير
+          </Button>
 
           {/* Content Card */}
-          <div className="bg-white dark:bg-dark-light border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+          <Card padding={false} className="overflow-hidden">
             {/* Header Section */}
-            <div className="p-6 sm:p-8 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold mb-3 text-slate-900 dark:text-white">
+            <div className="border-b border-border p-6 sm:p-8">
+              <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <h1 className="mb-3 text-h1 text-text">
                     {report.title || "بدون عنوان"}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     {report.student_name && (
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                      <span className="text-body-sm text-muted">
                         الطالب: {report.student_name}
                       </span>
                     )}
                     {report.report_type && (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-medium">
-                        {report.report_type}
-                      </span>
+                      <Badge variant="primary">{report.report_type}</Badge>
                     )}
                   </div>
                 </div>
                 {/* Status Badge */}
-                {report.status && (
-                  <span
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
-                      report.status === "draft" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                      report.status === "submitted" ? "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400" :
-                      report.status === "approved" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                      report.status === "rejected" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
-                      report.status === "locked" ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" :
-                      "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
-                    }`}
-                  >
-                    {report.status === "draft" ? "مسودة" :
-                     report.status === "submitted" ? "مقدمة" :
-                     report.status === "approved" ? "موافق عليها" :
-                     report.status === "rejected" ? "مرفوضة" :
-                     report.status === "locked" ? "مقفلة" :
-                     report.status}
-                  </span>
-                )}
+                {report.status ? getStatusBadge(report.status) : null}
               </div>
             </div>
 
             {/* Details Section */}
-            <div className="p-6 sm:p-8 space-y-6">
+            <div className="space-y-6 p-6 sm:p-8">
               {/* Description */}
               {report.description && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     الوصف
                   </h3>
-                  <p className="text-sm sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+                  <p className="whitespace-pre-wrap text-body-sm text-text">
                     {report.description}
                   </p>
                 </div>
@@ -348,10 +329,10 @@ function ReportDetailsInner() {
               {/* Content (JSON) */}
               {report.content && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     المحتوى
                   </h3>
-                  <pre className="text-xs bg-slate-50 dark:bg-slate-800 p-4 rounded-lg overflow-x-auto">
+                  <pre className="overflow-x-auto rounded-md border border-border bg-background p-4 text-caption text-text">
                     {JSON.stringify(report.content, null, 2)}
                   </pre>
                 </div>
@@ -360,10 +341,10 @@ function ReportDetailsInner() {
               {/* Target Info */}
               {report.target_type && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     الهدف
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.target_type === "case" ? "حالة سريرية" : 
                      report.target_type === "appointment" ? "موعد" : 
                      report.target_type === "session" ? "جلسة" : 
@@ -375,13 +356,13 @@ function ReportDetailsInner() {
               {/* Author Info */}
               {report.author_name && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     المؤلف
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.author_name}
                     {report.author_role && (
-                      <span className="text-sm text-slate-500 dark:text-slate-400 mr-2">
+                      <span className="text-sm text-muted mr-2">
                         ({report.author_role === "student" ? "طالب" : 
                           report.author_role === "supervisor" ? "مشرف" : 
                           report.author_role === "university_admin" ? "مسؤول جامعة" : 
@@ -395,10 +376,10 @@ function ReportDetailsInner() {
               {/* Supervisor Info */}
               {report.supervisor_name && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     المشرف
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.supervisor_name}
                   </p>
                 </div>
@@ -407,10 +388,10 @@ function ReportDetailsInner() {
               {/* University Info */}
               {report.university_name && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     الجامعة
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.university_name}
                   </p>
                 </div>
@@ -419,10 +400,10 @@ function ReportDetailsInner() {
               {/* Score */}
               {report.score !== null && report.score !== undefined && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     النتيجة
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.score}/100
                   </p>
                 </div>
@@ -431,10 +412,10 @@ function ReportDetailsInner() {
               {/* Feedback */}
               {report.feedback && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     الملاحظات
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white whitespace-pre-wrap">
+                  <p className="text-body-sm text-text whitespace-pre-wrap">
                     {report.feedback}
                   </p>
                 </div>
@@ -443,14 +424,14 @@ function ReportDetailsInner() {
               {/* Review Info */}
               {report.approved_by_name && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     الموافق عليه
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-body-sm text-text">
                     {report.approved_by_name}
                   </p>
                   {report.approved_at && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    <p className="mt-1 text-sm text-muted">
                       تاريخ الموافقة: {formatDate(report.approved_at)}
                     </p>
                   )}
@@ -460,10 +441,10 @@ function ReportDetailsInner() {
               {/* Review Notes */}
               {report.review_notes && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     ملاحظات المراجعة
                   </h3>
-                  <p className="text-base text-slate-900 dark:text-white whitespace-pre-wrap">
+                  <p className="text-body-sm text-text whitespace-pre-wrap">
                     {report.review_notes}
                   </p>
                 </div>
@@ -473,60 +454,60 @@ function ReportDetailsInner() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {report.created_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       تاريخ الإنشاء
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.created_at)}
                     </p>
                   </div>
                 )}
                 {report.submitted_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       تاريخ التقديم
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.submitted_at)}
                     </p>
                   </div>
                 )}
                 {report.approved_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       تاريخ الموافقة
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.approved_at)}
                     </p>
                   </div>
                 )}
                 {report.locked_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       تاريخ القفل
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.locked_at)}
                     </p>
                   </div>
                 )}
                 {report.rejected_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       تاريخ الرفض
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.rejected_at)}
                     </p>
                   </div>
                 )}
                 {report.updated_at && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                    <h3 className="mb-2 text-caption font-semibold text-muted">
                       آخر تحديث
                     </h3>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-body-sm text-text">
                       {formatDate(report.updated_at)}
                     </p>
                   </div>
@@ -536,7 +517,7 @@ function ReportDetailsInner() {
               {/* Attachments */}
               {report.attachments && report.attachments.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  <h3 className="mb-2 text-caption font-semibold text-muted">
                     المرفقات
                   </h3>
                   <div className="space-y-2">
@@ -546,7 +527,7 @@ function ReportDetailsInner() {
                         href={attachment.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300"
+                        className="block text-body-sm text-primary hover:underline"
                       >
                         {attachment.type || `مرفق ${idx + 1}`}
                       </a>
@@ -558,70 +539,46 @@ function ReportDetailsInner() {
 
               {/* Actions */}
               {(canSubmit || canExport) && (
-                <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                <div className="border-t border-border pt-6">
                   <div className={`flex flex-wrap gap-3 ${directionRtl ? "flex-row-reverse" : ""}`}>
                     {canSubmit && (
-                      <button
+                      <Button
                         onClick={handleSubmit}
                         disabled={submitting || exporting || exportingExcel}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        loading={submitting}
                       >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="animate-spin" size={18} />
-                            <span>جاري التقديم...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send size={18} />
-                            <span>تقديم التقرير</span>
-                          </>
-                        )}
-                      </button>
+                        {!submitting ? <Send size={18} /> : null}
+                        تقديم التقرير
+                      </Button>
                     )}
                     {canExport && (
                       <>
-                        <button
+                        <Button
+                          variant="danger"
                           onClick={() => handleExport("pdf")}
                           disabled={submitting || exporting || exportingExcel}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          loading={exporting}
                         >
-                          {exporting ? (
-                            <>
-                              <Loader2 className="animate-spin" size={18} />
-                              <span>جاري التصدير...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Download size={18} />
-                              <span>تصدير PDF</span>
-                            </>
-                          )}
-                        </button>
-                        <button
+                          {!exporting ? <Download size={18} /> : null}
+                          تصدير PDF
+                        </Button>
+                        <Button
+                          variant="secondary"
                           onClick={() => handleExport("excel")}
                           disabled={submitting || exporting || exportingExcel}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          loading={exportingExcel}
+                          className="border-success/30 bg-success/15 text-success hover:bg-success/20"
                         >
-                          {exportingExcel ? (
-                            <>
-                              <Loader2 className="animate-spin" size={18} />
-                              <span>جاري التصدير...</span>
-                            </>
-                          ) : (
-                            <>
-                              <FileSpreadsheet size={18} />
-                              <span>تصدير Excel</span>
-                            </>
-                          )}
-                        </button>
+                          {!exportingExcel ? <FileSpreadsheet size={18} /> : null}
+                          تصدير Excel
+                        </Button>
                       </>
                     )}
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </AnimatedWrapper>

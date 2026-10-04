@@ -8,7 +8,6 @@ import { setUser } from "../redux/features/auth/authSlice";
 import { getUser } from "@/lib/auth";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
-import Footer from "./Footer";
 import AnimatedWrapper from "./AnimatedWrapper";
 import PageLoader from "./PageLoader";
 
@@ -169,7 +168,7 @@ export default function AppLayout({ children }) {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-dark">
+    <div className="flex flex-col min-h-screen bg-background">
       <PageLoader loading={loading} hasSidebar={!hideLayout} />
 
       {!hideLayout && <Sidebar />}
@@ -190,7 +189,6 @@ export default function AppLayout({ children }) {
           {!hideLayout && <Navbar />}
           <AnimatedWrapper>{children}</AnimatedWrapper>
         </main>
-        {!hideLayout && <Footer />}
       </div>
     </div>
   );

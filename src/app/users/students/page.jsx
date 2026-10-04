@@ -15,6 +15,19 @@ import {
 import { fetchStudentRatingAsync } from "@/redux/features/evaluations/evaluationsSlice";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
 import RoleGuard from "@/components/RoleGuard";
+import {
+  Button,
+  Input,
+  Badge,
+  DataTable,
+  DataTableHead,
+  DataTableTh,
+  DataTableBody,
+  DataTableRow,
+  DataTableTd,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import toast from "react-hot-toast";
 import { useRtl } from "@/hooks/useRtl";
 import { fetchUniversityDetails, fetchUniversityAdminProfile } from "@/services/universityApi";
@@ -381,33 +394,34 @@ function StudentsPageContent() {
     <AnimatedWrapper>
       <div className={`p-6 sm:p-8 space-y-6 ${isRtl ? "text-right" : "text-left"}`}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-h1 text-text">
               إدارة الطلاب
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+            <p className="text-body-sm text-text-secondary">
               إدارة حسابات الطلاب في الجامعة
             </p>
           </div>
-          <button
-            onClick={handleAdd}
-            className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap"
-          >
-            <PlusCircle size={20} />
+          <Button onClick={handleAdd} className="shrink-0 self-start sm:self-auto">
+            <PlusCircle size={18} />
             إضافة طالب جديد
-          </button>
+          </Button>
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <Search className={`absolute ${isRtl ? "right-3" : "left-3"} top-1/2 transform -translate-y-1/2 text-slate-400`} size={20} />
-          <input
+        <div className="relative max-w-xl">
+          <Search
+            className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${isRtl ? "right-3" : "left-3"}`}
+            size={16}
+            aria-hidden
+          />
+          <Input
             type="text"
             placeholder="ابحث عن طالب..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full ${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all`}
+            className={isRtl ? "pr-10" : "pl-10"}
           />
         </div>
 
@@ -426,11 +440,11 @@ function StudentsPageContent() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-dark-light rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-surface shadow-xl"
             >
               <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+                  <h2 className="text-h3 text-text">
                     {editingStudent ? "تعديل طالب" : "إضافة طالب جديد"}
                   </h2>
                   <button
@@ -438,7 +452,7 @@ function StudentsPageContent() {
                       setShowForm(false);
                       setEditingStudent(null);
                     }}
-                    className="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="rounded-lg p-2 text-muted transition-colors hover:bg-primary-muted hover:text-text"
                     aria-label="Close"
                   >
                     <X size={24} />
@@ -448,7 +462,7 @@ function StudentsPageContent() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         اسم المستخدم *
                       </label>
                       <input
@@ -457,11 +471,11 @@ function StudentsPageContent() {
                         value={formData.username}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         البريد الإلكتروني *
                       </label>
                       <input
@@ -470,13 +484,13 @@ function StudentsPageContent() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     {!editingStudent && (
                       <>
                         <div>
-                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          <label className="mb-2 block text-caption font-semibold text-muted">
                             كلمة المرور *
                           </label>
                           <input
@@ -485,11 +499,11 @@ function StudentsPageContent() {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          <label className="mb-2 block text-caption font-semibold text-muted">
                             تأكيد كلمة المرور *
                           </label>
                           <input
@@ -498,13 +512,13 @@ function StudentsPageContent() {
                             value={formData.password_confirm}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                           />
                         </div>
                       </>
                     )}
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         الاسم الأول
                       </label>
                       <input
@@ -512,11 +526,11 @@ function StudentsPageContent() {
                         name="first_name"
                         value={formData.first_name}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         اسم العائلة
                       </label>
                       <input
@@ -524,11 +538,11 @@ function StudentsPageContent() {
                         name="last_name"
                         value={formData.last_name}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         رقم الطالب
                       </label>
                       <input
@@ -536,11 +550,11 @@ function StudentsPageContent() {
                         name="student_id"
                         value={formData.student_id}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         السنة الدراسية
                       </label>
                       <input
@@ -550,11 +564,11 @@ function StudentsPageContent() {
                         onChange={handleChange}
                         min="1"
                         max="5"
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         التخصص
                       </label>
                       <input
@@ -562,11 +576,11 @@ function StudentsPageContent() {
                         name="specialization"
                         value={formData.specialization}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         رقم الهاتف
                       </label>
                       <input
@@ -574,11 +588,11 @@ function StudentsPageContent() {
                         name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-caption font-semibold text-muted">
                         العنوان
                       </label>
                       <input
@@ -586,39 +600,26 @@ function StudentsPageContent() {
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
-                    <button
+                  <div className="flex justify-end gap-3 border-t border-border pt-6">
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         setShowForm(false);
                         setEditingStudent(null);
                       }}
-                      className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
                     >
                       إلغاء
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitLoading}
-                      className="px-5 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold text-sm shadow-sm hover:shadow-md"
-                    >
-                      {submitLoading ? (
-                        <>
-                          <Loader2 className="animate-spin" size={18} />
-                          جاري الحفظ...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={18} />
-                          حفظ
-                        </>
-                      )}
-                    </button>
+                    </Button>
+                    <Button type="submit" loading={submitLoading}>
+                      {!submitLoading ? <Save size={18} /> : null}
+                      حفظ
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -628,118 +629,123 @@ function StudentsPageContent() {
 
         {/* Students Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-sky-600" size={32} />
-          </div>
+          <DataTableLoading />
         ) : filteredStudents.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+          <DataTableEmpty>
             {searchTerm ? "لا توجد نتائج للبحث" : "لا يوجد طلاب"}
-          </div>
+          </DataTableEmpty>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border-2 border-sky-200/50 dark:border-dark-lighter shadow-2xl">
-            <table
-              className={`w-full text-sm text-slate-900 dark:text-slate-200 min-w-[900px] ${
-                isRtl ? "text-right" : "text-left"
-              }`}
-              dir={isRtl ? "rtl" : "ltr"}
-            >
-              <thead className="bg-gradient-to-r from-sky-700 via-sky-600 to-sky-700 dark:from-dark-lighter dark:via-dark-light dark:to-dark-lighter text-white">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">الاسم</th>
-                  <th className="px-6 py-4 font-semibold">البريد الإلكتروني</th>
-                  <th className="px-6 py-4 font-semibold">رقم الهاتف</th>
-                  <th className="px-6 py-4 font-semibold">السنة الدراسية</th>
-                  <th className="px-6 py-4 font-semibold">التخصص</th>
-                  <th className="px-6 py-4 font-semibold">التقييم</th>
-                  <th className="px-6 py-4 font-semibold">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.map((student, idx) => {
-                  const name = student.studentName || student.email?.split("@")[0] || "-";
-                  const studentId = student.user_id || student.id;
-                  const ratingData = studentRatings[studentId] || studentStatistics[studentId]?.rating;
-                  const isLoadingRating = loadingRatings[studentId];
-                  
-                  // حساب النجوم من final_rating (كما يأتي من API)
-                  // إذا كانت القيمة أكبر من 100، نقسم على 10 (API يعيد 1000 بدلاً من 100)
-                  let finalRating = ratingData?.final_rating || 0;
-                  if (finalRating > 100) {
-                    finalRating = finalRating / 10;
-                  }
-                  const starCount = Math.round((finalRating / 100) * 5);
-                  
-                  return (
-                    <motion.tr
-                      key={studentId}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.02 }}
-                      className={`${
-                        idx % 2 === 0
-                          ? "bg-sky-50/50 dark:bg-dark-light/30"
-                          : "bg-white dark:bg-dark-light"
-                      } border-b border-sky-200/50 dark:border-dark-lighter hover:bg-gradient-to-r hover:from-sky-100/50 hover:to-sky-200/50 dark:hover:from-dark-lighter transition-all duration-300`}
-                    >
-                      <td className="px-6 py-4 font-medium">{name}</td>
-                      <td className="px-6 py-4">{student.email || "-"}</td>
-                      <td className="px-6 py-4">{student.phone_number || "-"}</td>
-                      <td className="px-6 py-4">{student.year_of_study ? `السنة ${student.year_of_study}` : "-"}</td>
-                      <td className="px-6 py-4">{student.specialization || "-"}</td>
-                      <td className="px-6 py-4">
-                        {isLoadingRating ? (
-                          <Loader2 className="animate-spin text-sky-600" size={16} />
-                        ) : ratingData ? (
-                          <div className="flex flex-col gap-1">
-                            <div className={`flex items-center gap-1 ${isRtl ? "flex-row-reverse" : ""}`}>
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < starCount
-                                      ? "fill-sky-500 text-sky-500 dark:fill-sky-400 dark:text-sky-400"
-                                      : "text-slate-300 dark:text-slate-600"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              {finalRating.toFixed(1)}/100
-                              {ratingData.total_evaluations && (
-                                <span className="mr-1">({ratingData.total_evaluations} تقييم)</span>
-                              )}
-                            </div>
+          <DataTable dir={isRtl ? "rtl" : "ltr"} minWidth="900px">
+            <DataTableHead>
+              <tr>
+                <DataTableTh>الاسم</DataTableTh>
+                <DataTableTh>البريد الإلكتروني</DataTableTh>
+                <DataTableTh>رقم الهاتف</DataTableTh>
+                <DataTableTh>السنة الدراسية</DataTableTh>
+                <DataTableTh>التخصص</DataTableTh>
+                <DataTableTh>التقييم</DataTableTh>
+                <DataTableTh className={isRtl ? "text-right" : "text-left"}>الإجراءات</DataTableTh>
+              </tr>
+            </DataTableHead>
+            <DataTableBody>
+              {filteredStudents.map((student, idx) => {
+                const name = student.studentName || student.email?.split("@")[0] || "-";
+                const studentId = student.user_id || student.id;
+                const ratingData = studentRatings[studentId] || studentStatistics[studentId]?.rating;
+                const isLoadingRating = loadingRatings[studentId];
+                
+                // حساب النجوم من final_rating (كما يأتي من API)
+                // إذا كانت القيمة أكبر من 100، نقسم على 10 (API يعيد 1000 بدلاً من 100)
+                let finalRating = ratingData?.final_rating || 0;
+                if (finalRating > 100) {
+                  finalRating = finalRating / 10;
+                }
+                const starCount = Math.round((finalRating / 100) * 5);
+                
+                return (
+                  <DataTableRow
+                    as={motion.tr}
+                    key={studentId}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.24) }}
+                  >
+                    <DataTableTd className="font-medium text-text">{name}</DataTableTd>
+                    <DataTableTd className="text-text-secondary">{student.email || "-"}</DataTableTd>
+                    <DataTableTd className="text-text-secondary tabular-nums">
+                      {student.phone_number || "-"}
+                    </DataTableTd>
+                    <DataTableTd>
+                      {student.year_of_study ? (
+                        <Badge variant="primary">السنة {student.year_of_study}</Badge>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </DataTableTd>
+                    <DataTableTd>
+                      {student.specialization ? (
+                        <Badge variant="default">{student.specialization}</Badge>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </DataTableTd>
+                    <DataTableTd>
+                      {isLoadingRating ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      ) : ratingData ? (
+                        <div className="flex flex-col gap-1">
+                          <div className={`flex items-center gap-0.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3.5 w-3.5 ${
+                                  i < starCount
+                                    ? "fill-primary text-primary"
+                                    : "text-border-strong"
+                                }`}
+                              />
+                            ))}
                           </div>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-500 text-sm">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={`flex items-center gap-2 ${isRtl ? "justify-start" : "justify-end"}`}>
-                          <button
-                            onClick={() => handleEdit(student)}
-                            className="p-2 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all duration-200"
-                            title="تعديل"
-                            aria-label="Edit"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(studentId)}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                            title="حذف"
-                            aria-label="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          <div className="text-caption text-muted tabular-nums">
+                            {finalRating.toFixed(1)}/100
+                            {ratingData.total_evaluations && (
+                              <span className="ms-1">({ratingData.total_evaluations} تقييم)</span>
+                            )}
+                          </div>
                         </div>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </DataTableTd>
+                    <DataTableTd>
+                      <div className={`flex items-center gap-1 ${isRtl ? "justify-start" : "justify-end"}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(student)}
+                          className="h-9 w-9 px-0 text-primary hover:bg-primary-muted"
+                          title="تعديل"
+                          aria-label="Edit"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(studentId)}
+                          className="h-9 w-9 px-0 text-danger hover:bg-danger/10"
+                          title="حذف"
+                          aria-label="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </DataTableTd>
+                  </DataTableRow>
+                );
+              })}
+            </DataTableBody>
+          </DataTable>
         )}
       </div>
     </AnimatedWrapper>

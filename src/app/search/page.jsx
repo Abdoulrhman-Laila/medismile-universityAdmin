@@ -2,38 +2,41 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { 
-  Search, 
-  Users, 
-  GraduationCap, 
-  FileText, 
-  Calendar, 
+import {
+  Search,
+  Users,
+  GraduationCap,
+  FileText,
+  Calendar,
   Star,
   Loader2,
   ArrowRight,
-  X
+  X,
 } from "lucide-react";
 import { unifiedSearch, highlightMatchReact } from "@/lib/searchUtils";
-import { fetchStudentsAsync } from "@/redux/features/students/studentsSlice";
-import { fetchSupervisorsAsync } from "@/redux/features/supervisors/supervisorsSlice";
-import { fetchCases } from "@/redux/features/clinicalCases/clinicalCasesSlice";
-import { fetchAppointmentsAsync } from "@/redux/features/appointments/appointmentsSlice";
-import { fetchEvaluationsAsync } from "@/redux/features/evaluations/evaluationsSlice";
+import { useSearchData } from "@/hooks/useSearchData";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
 import RoleGuard from "@/components/RoleGuard";
+import {
+  Input,
+  Badge,
+  Card,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import { useRtl } from "@/hooks/useRtl";
 
 export default function SearchPage() {
   return (
     <RoleGuard>
-      <Suspense fallback={
-        <div className="flex justify-center items-center min-h-screen">
-          <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
+          </div>
+        }
+      >
         <SearchContent />
       </Suspense>
     </RoleGuard>
@@ -41,20 +44,20 @@ export default function SearchPage() {
 }
 
 function SearchContent() {
-  const { t, i18n } = useTranslation();
   const isRtl = useRtl();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
 
-  // جلب البيانات من Redux
-  const { students, loading: studentsLoading } = useSelector((state) => state.students);
-  const { supervisors, loading: supervisorsLoading } = useSelector((state) => state.supervisors);
-  const { cases, loading: casesLoading } = useSelector((state) => state.clinicalCases);
-  const { appointments, loading: appointmentsLoading } = useSelector((state) => state.appointments);
-  const { evaluations, loading: evaluationsLoading } = useSelector((state) => state.evaluations);
+  const {
+    students,
+    supervisors,
+    cases,
+    appointments,
+    evaluations,
+    loading: dataLoading,
+    hasAnyData,
+  } = useSearchData({ enabled: true });
 
-  // State
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [results, setResults] = useState(null);
@@ -64,22 +67,11 @@ function SearchContent() {
 
   // جلب query من URL
   useEffect(() => {
-    const queryFromUrl = searchParams.get('q') || '';
-    if (queryFromUrl) {
-      setSearchQuery(queryFromUrl);
-    }
+    const queryFromUrl = searchParams.get("q") || "";
+    setSearchQuery(queryFromUrl);
   }, [searchParams]);
 
-  // جلب جميع البيانات عند التحميل
-  useEffect(() => {
-    dispatch(fetchStudentsAsync());
-    dispatch(fetchSupervisorsAsync());
-    dispatch(fetchCases({}));
-    dispatch(fetchAppointmentsAsync({}));
-    dispatch(fetchEvaluationsAsync({}));
-  }, [dispatch]);
-
-  // البحث عند تغيير query
+  // البحث عند تغيير query أو البيانات
   useEffect(() => {
     if (searchQuery.trim()) {
       const searchResults = unifiedSearch(searchQuery, {
@@ -87,7 +79,7 @@ function SearchContent() {
         supervisors: supervisors || [],
         cases: cases || [],
         appointments: appointments || [],
-        evaluations: evaluations || []
+        evaluations: evaluations || [],
       });
       setResults(searchResults);
     } else {
@@ -95,22 +87,20 @@ function SearchContent() {
     }
   }, [searchQuery, students, supervisors, cases, appointments, evaluations]);
 
-  // معالجة البحث
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    const q = searchQuery.trim();
+    if (!q) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
   };
 
-  // تنظيف البحث
   const handleClear = () => {
     setSearchQuery("");
     setResults(null);
+    setActiveTab("all");
     router.push("/search");
   };
 
-  // تحديد التبويب النشط
   const tabs = [
     { id: "all", label: "الكل", icon: Search, count: results?.total || 0 },
     { id: "students", label: "الطلاب", icon: GraduationCap, count: results?.students.length || 0 },
@@ -120,10 +110,9 @@ function SearchContent() {
     { id: "evaluations", label: "التقييمات", icon: Star, count: results?.evaluations.length || 0 },
   ];
 
-  // تحديد النتائج المعروضة حسب التبويب
   const getDisplayedResults = () => {
     if (!results) return null;
-    
+
     switch (activeTab) {
       case "students":
         return { students: results.students };
@@ -141,96 +130,114 @@ function SearchContent() {
   };
 
   const displayedResults = getDisplayedResults();
-  const isLoading = studentsLoading || supervisorsLoading || casesLoading || 
-                   appointmentsLoading || evaluationsLoading;
+  const showLoading = Boolean(searchQuery.trim()) && dataLoading && !hasAnyData;
+  const showNoResults =
+    Boolean(searchQuery.trim()) &&
+    !dataLoading &&
+    results &&
+    results.total === 0;
 
   if (!mounted) return null;
 
   return (
     <AnimatedWrapper>
-      <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-slate-50 dark:bg-dark py-6 px-4 md:px-6">
-        <div className="max-w-7xl mx-auto">
+      <div
+        dir={isRtl ? "rtl" : "ltr"}
+        className={`min-h-screen bg-background px-4 py-6 md:px-6 ${
+          isRtl ? "text-right" : "text-left"
+        }`}
+      >
+        <div className="mx-auto max-w-7xl space-y-6">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              🔍 البحث الموحد
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              ابحث في جميع البيانات: الطلاب، المشرفين، الحالات، المواعيد، والتقييمات
+          <div className="space-y-1">
+            <h1 className="text-h1 text-text">البحث الموحد</h1>
+            <p className="text-body-sm text-text-secondary">
+              ابحث في الطلاب، المشرفين، الحالات، المواعيد، والتقييمات
             </p>
           </div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-6">
+          <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? "right-4" : "left-4"} text-slate-400`} size={20} />
-              <input
+              <Search
+                className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${
+                  isRtl ? "right-4" : "left-4"
+                }`}
+                size={18}
+                aria-hidden
+              />
+              <Input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setActiveTab("all");
+                }}
                 placeholder="ابحث عن طالب، مشرف، حالة، موعد، أو تقييم..."
-                className={`w-full ${isRtl ? "pr-12 pl-4" : "pl-12 pr-4"} py-4 rounded-xl border-2 border-slate-200 dark:border-slate-700
-                  bg-white dark:bg-dark-light
-                  placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white 
-                  focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 
-                  focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 
-                  text-base transition-all duration-200`}
+                className={`h-12 text-body-sm ${isRtl ? "pr-11 pl-11" : "pl-11 pr-11"}`}
               />
-              {searchQuery && (
+              {searchQuery ? (
                 <button
                   type="button"
                   onClick={handleClear}
-                  className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? "left-4" : "right-4"} 
-                    p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted transition-colors hover:bg-primary-muted hover:text-text ${
+                    isRtl ? "left-3" : "right-3"
+                  }`}
+                  aria-label="Clear search"
                 >
-                  <X size={18} className="text-slate-400" />
+                  <X size={16} />
                 </button>
-              )}
+              ) : null}
             </div>
           </form>
 
           {/* Loading State */}
-          {isLoading && !results && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
-            </div>
-          )}
+          {showLoading && <DataTableLoading />}
 
           {/* Results Summary */}
           {results && results.total > 0 && (
-            <div className="mb-6 p-4 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-200 dark:border-sky-800">
-              <p className="text-sky-900 dark:text-sky-100 font-semibold">
-                📊 تم العثور على <span className="text-sky-600 dark:text-sky-400">{results.total}</span> نتيجة
+            <Card className="!p-4 border-primary/25 bg-primary-muted/30">
+              <p className="text-body-sm text-text">
+                تم العثور على{" "}
+                <span className="font-semibold text-primary">{results.total}</span>{" "}
+                نتيجة
+                {dataLoading ? (
+                  <span className="ms-2 text-caption text-muted">(جاري تحديث البيانات...)</span>
+                ) : null}
               </p>
-            </div>
+            </Card>
           )}
 
           {/* Tabs */}
           {results && results.total > 0 && (
-            <div className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex flex-wrap gap-2 border-b border-border pb-px">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
+                    type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-semibold text-sm transition-all duration-200
-                      ${isActive
-                        ? "bg-sky-600 text-white dark:bg-sky-600"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                    className={`inline-flex items-center gap-2 rounded-t-md px-3 py-2 text-caption font-semibold transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background text-text-secondary hover:bg-primary-muted hover:text-text"
+                    }`}
                   >
-                    <Icon size={18} />
+                    <Icon size={16} />
                     <span>{tab.label}</span>
                     {tab.count > 0 && (
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        isActive 
-                          ? "bg-white/20 text-white" 
-                          : "bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300"
-                      }`}>
+                      <Badge
+                        variant={isActive ? "default" : "primary"}
+                        className={
+                          isActive
+                            ? "border-primary-foreground/25 bg-primary-foreground/15 text-primary-foreground"
+                            : undefined
+                        }
+                      >
                         {tab.count}
-                      </span>
+                      </Badge>
                     )}
                   </button>
                 );
@@ -239,90 +246,98 @@ function SearchContent() {
           )}
 
           {/* No Results */}
-          {results && results.total === 0 && (
-            <div className="text-center py-12">
-              <Search className="mx-auto text-slate-300 dark:text-slate-600 mb-4" size={48} />
-              <p className="text-slate-600 dark:text-slate-400 text-lg font-semibold">
-                لم يتم العثور على نتائج
-              </p>
-              <p className="text-slate-500 dark:text-slate-500 text-sm mt-2">
+          {showNoResults && (
+            <DataTableEmpty>
+              <Search className="mx-auto mb-3 text-muted" size={40} />
+              <p className="text-body-sm font-medium text-text">لم يتم العثور على نتائج</p>
+              <p className="mt-1 text-caption text-muted">
                 جرب البحث بكلمات مختلفة أو تحقق من الإملاء
               </p>
-            </div>
+            </DataTableEmpty>
+          )}
+
+          {/* Empty state before search */}
+          {!searchQuery.trim() && !showLoading && (
+            <DataTableEmpty>
+              <Search className="mx-auto mb-3 text-muted" size={40} />
+              <p className="text-body-sm text-muted">
+                اكتب كلمة للبحث في بيانات الجامعة
+              </p>
+            </DataTableEmpty>
           )}
 
           {/* Results */}
-          {displayedResults && (
-            <div className="space-y-6">
-              {/* Students Results */}
-              {(activeTab === "all" || activeTab === "students") && displayedResults.students && displayedResults.students.length > 0 && (
-                <ResultsSection
-                  title="الطلاب"
-                  icon={GraduationCap}
-                  count={displayedResults.students.length}
-                  items={displayedResults.students}
-                  type="student"
-                  router={router}
-                  isRtl={isRtl}
-                  query={searchQuery}
-                />
-              )}
+          {displayedResults && results?.total > 0 && (
+            <div className="space-y-4">
+              {(activeTab === "all" || activeTab === "students") &&
+                displayedResults.students?.length > 0 && (
+                  <ResultsSection
+                    title="الطلاب"
+                    icon={GraduationCap}
+                    count={displayedResults.students.length}
+                    items={displayedResults.students}
+                    type="student"
+                    router={router}
+                    isRtl={isRtl}
+                    query={searchQuery}
+                  />
+                )}
 
-              {/* Supervisors Results */}
-              {(activeTab === "all" || activeTab === "supervisors") && displayedResults.supervisors && displayedResults.supervisors.length > 0 && (
-                <ResultsSection
-                  title="المشرفين"
-                  icon={Users}
-                  count={displayedResults.supervisors.length}
-                  items={displayedResults.supervisors}
-                  type="supervisor"
-                  router={router}
-                  isRtl={isRtl}
-                  query={searchQuery}
-                />
-              )}
+              {(activeTab === "all" || activeTab === "supervisors") &&
+                displayedResults.supervisors?.length > 0 && (
+                  <ResultsSection
+                    title="المشرفين"
+                    icon={Users}
+                    count={displayedResults.supervisors.length}
+                    items={displayedResults.supervisors}
+                    type="supervisor"
+                    router={router}
+                    isRtl={isRtl}
+                    query={searchQuery}
+                  />
+                )}
 
-              {/* Cases Results */}
-              {(activeTab === "all" || activeTab === "cases") && displayedResults.cases && displayedResults.cases.length > 0 && (
-                <ResultsSection
-                  title="الحالات السريرية"
-                  icon={FileText}
-                  count={displayedResults.cases.length}
-                  items={displayedResults.cases}
-                  type="case"
-                  router={router}
-                  isRtl={isRtl}
-                  query={searchQuery}
-                />
-              )}
+              {(activeTab === "all" || activeTab === "cases") &&
+                displayedResults.cases?.length > 0 && (
+                  <ResultsSection
+                    title="الحالات السريرية"
+                    icon={FileText}
+                    count={displayedResults.cases.length}
+                    items={displayedResults.cases}
+                    type="case"
+                    router={router}
+                    isRtl={isRtl}
+                    query={searchQuery}
+                  />
+                )}
 
-              {/* Appointments Results */}
-              {(activeTab === "all" || activeTab === "appointments") && displayedResults.appointments && displayedResults.appointments.length > 0 && (
-                <ResultsSection
-                  title="المواعيد"
-                  icon={Calendar}
-                  count={displayedResults.appointments.length}
-                  items={displayedResults.appointments}
-                  type="appointment"
-                  router={router}
-                  isRtl={isRtl}
-                  query={searchQuery}
-                />
-              )}
+              {(activeTab === "all" || activeTab === "appointments") &&
+                displayedResults.appointments?.length > 0 && (
+                  <ResultsSection
+                    title="المواعيد"
+                    icon={Calendar}
+                    count={displayedResults.appointments.length}
+                    items={displayedResults.appointments}
+                    type="appointment"
+                    router={router}
+                    isRtl={isRtl}
+                    query={searchQuery}
+                  />
+                )}
 
-              {/* Evaluations Results */}
-              {(activeTab === "all" || activeTab === "evaluations") && displayedResults.evaluations && displayedResults.evaluations.length > 0 && (
-                <ResultsSection
-                  title="التقييمات"
-                  icon={Star}
-                  count={displayedResults.evaluations.length}
-                  items={displayedResults.evaluations}
-                  type="evaluation"
-                  router={router}
-                  isRtl={isRtl}
-                  query={searchQuery}
-                />
-              )}
+              {(activeTab === "all" || activeTab === "evaluations") &&
+                displayedResults.evaluations?.length > 0 && (
+                  <ResultsSection
+                    title="التقييمات"
+                    icon={Star}
+                    count={displayedResults.evaluations.length}
+                    items={displayedResults.evaluations}
+                    type="evaluation"
+                    router={router}
+                    isRtl={isRtl}
+                    query={searchQuery}
+                  />
+                )}
             </div>
           )}
         </div>
@@ -331,14 +346,13 @@ function SearchContent() {
   );
 }
 
-// مكون عرض قسم النتائج
 function ResultsSection({ title, icon: Icon, count, items, type, router, isRtl, query }) {
   const getRoute = (item, type) => {
     switch (type) {
       case "student":
-        return `/users/students?studentId=${item.id}`;
+        return `/users/students?studentId=${item.id || item.user_id}`;
       case "supervisor":
-        return `/users/supervisors?supervisorId=${item.id}`;
+        return `/users/supervisors?supervisorId=${item.id || item.user_id}`;
       case "case":
         return `/university-cases/${item.id}`;
       case "appointment":
@@ -353,9 +367,19 @@ function ResultsSection({ title, icon: Icon, count, items, type, router, isRtl, 
   const getItemTitle = (item, type) => {
     switch (type) {
       case "student":
-        return `${item.first_name || ""} ${item.last_name || ""}`.trim() || item.email || "-";
+        return (
+          item.studentName ||
+          `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+          item.email ||
+          "-"
+        );
       case "supervisor":
-        return `${item.first_name || ""} ${item.last_name || ""}`.trim() || item.email || "-";
+        return (
+          item.supervisorName ||
+          `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+          item.email ||
+          "-"
+        );
       case "case":
         return item.title || "-";
       case "appointment":
@@ -386,50 +410,46 @@ function ResultsSection({ title, icon: Icon, count, items, type, router, isRtl, 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-dark-light rounded-xl border border-slate-200 dark:border-slate-700 p-6"
     >
-      <div className={`flex items-center gap-3 mb-4 ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-        <Icon className="text-sky-600 dark:text-sky-400" size={24} />
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-          {title}
-        </h2>
-        <span className="px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 text-sm font-semibold">
-          {count}
-        </span>
-      </div>
+      <Card>
+        <div className={`mb-4 flex items-center gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
+          <div className="rounded-md bg-primary-muted p-2 text-primary">
+            <Icon size={18} aria-hidden />
+          </div>
+          <h2 className="text-h3 text-text">{title}</h2>
+          <Badge variant="primary">{count}</Badge>
+        </div>
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <motion.div
-            key={item.id}
-            whileHover={{ scale: 1.01 }}
-            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 
-              hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/10
-              transition-all duration-200 cursor-pointer"
-            onClick={() => router.push(getRoute(item, type))}
-          >
-            <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
-                  {highlightMatchReact(getItemTitle(item, type), query)}
-                </h3>
-                {getItemSubtitle(item, type) && (
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {highlightMatchReact(getItemSubtitle(item, type), query)}
-                  </p>
-                )}
+        <div className="space-y-2">
+          {items.map((item) => (
+            <button
+              type="button"
+              key={item.id || item.user_id}
+              onClick={() => router.push(getRoute(item, type))}
+              className="w-full rounded-md border border-border bg-surface px-4 py-3 text-start transition-colors hover:border-primary/35 hover:bg-primary-muted/40"
+            >
+              <div className={`flex items-center justify-between gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
+                <div className="min-w-0 flex-1">
+                  <h3 className="mb-0.5 font-medium text-text">
+                    {highlightMatchReact(getItemTitle(item, type), query)}
+                  </h3>
+                  {getItemSubtitle(item, type) ? (
+                    <p className="text-caption text-muted">
+                      {highlightMatchReact(getItemSubtitle(item, type), query)}
+                    </p>
+                  ) : null}
+                </div>
+                <ArrowRight
+                  className={`shrink-0 text-muted ${isRtl ? "rotate-180" : ""}`}
+                  size={18}
+                />
               </div>
-              <ArrowRight 
-                className={`text-slate-400 ${isRtl ? "rotate-180" : ""}`} 
-                size={20} 
-              />
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </button>
+          ))}
+        </div>
+      </Card>
     </motion.div>
   );
 }
-

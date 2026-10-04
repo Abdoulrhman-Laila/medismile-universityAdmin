@@ -7,6 +7,7 @@ import { useRtl } from "@/hooks/useRtl";
 import Link from "next/link";
 import { ShieldX, Home, ArrowLeft } from "lucide-react";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import { Button, Card } from "@/components/ui";
 
 /**
  * صفحة Unauthorized
@@ -18,7 +19,6 @@ export default function UnauthorizedPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // بعد 5 ثوانٍ، نعيد المستخدم للصفحة الرئيسية تلقائياً
     const timer = setTimeout(() => {
       router.push("/");
     }, 5000);
@@ -29,67 +29,51 @@ export default function UnauthorizedPage() {
   return (
     <AnimatedWrapper>
       <div
-        className={`min-h-screen flex items-center justify-center p-6 ${
+        className={`flex min-h-screen items-center justify-center bg-background p-6 ${
           isRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-md w-full text-center">
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
-              <ShieldX className="h-16 w-16 text-red-600 dark:text-red-400" />
+        <Card className="w-full max-w-md !p-6 text-center sm:!p-8">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-danger/15 p-6">
+              <ShieldX className="h-16 w-16 text-danger" />
             </div>
           </div>
 
-          {/* Title */}
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-            {t("Unauthorized.title")}
-          </h1>
+          <h1 className="mb-4 text-h1 text-text">{t("Unauthorized.title")}</h1>
 
-          {/* Description */}
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
+          <p className="mb-6 text-body-sm text-text-secondary">
             {t("Unauthorized.description")}
             <br />
             {t("Unauthorized.contactSupport")}
           </p>
 
-          {/* Auto redirect message */}
-          <p className="text-sm text-slate-500 dark:text-slate-500 mb-8">
+          <p className="mb-8 text-caption text-muted">
             {t("Unauthorized.autoRedirect")}
           </p>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium"
-            >
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <Button onClick={() => router.push("/")}>
               <Home size={20} />
               {t("Unauthorized.homeButton")}
-            </Link>
+            </Button>
 
-            <button
-              onClick={() => router.back()}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-medium"
-            >
+            <Button variant="secondary" onClick={() => router.back()}>
               <ArrowLeft size={20} />
               {t("Unauthorized.backButton")}
-            </button>
+            </Button>
           </div>
 
-          {/* Support link */}
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+          <div className="mt-8 border-t border-border pt-6">
             <Link
               href="/support"
-              className="text-sky-600 dark:text-sky-400 hover:underline text-sm"
+              className="text-body-sm text-primary hover:underline"
             >
               {t("Unauthorized.contactSupportLink")}
             </Link>
           </div>
-        </div>
+        </Card>
       </div>
     </AnimatedWrapper>
   );
 }
-
-

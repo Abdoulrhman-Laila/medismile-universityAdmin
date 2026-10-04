@@ -4,8 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
-import { Menu, X, Bell, Search } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { Menu, X, Search, ChevronDown, LayoutDashboard, UserRound, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ToggleTheme from "./ToggleTheme";
 import SearchDropdown from "./SearchDropdown";
@@ -14,6 +14,9 @@ import SearchDropdown from "./SearchDropdown";
 import { logoutAsync } from "../redux/features/auth/authSlice";
 import { getUser } from "@/lib/auth";
 import toast from "react-hot-toast";
+import Button from "./ui/Button";
+import Input from "./ui/Input";
+import { cx } from "./ui/cx";
 
 // دالة إرسال إشعار
 export function sendNotification(notification) {
@@ -40,24 +43,17 @@ export default function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const searchRef = useRef(null);
-
+  const searchRefDesktop = useRef(null);
+  const searchRefMobile = useRef(null);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    // استخدام getUser من auth.js الذي يتعامل مع الأخطاء بشكل آمن
     const user = getUser();
     setCurrentUser(user);
 
-    const handleUserLogin = () => {
-      const updatedUser = getUser();
-      setCurrentUser(updatedUser);
-    };
-
-    const handleUserLogout = () => {
-      setCurrentUser(null);
-    };
+    const handleUserLogin = () => setCurrentUser(getUser());
+    const handleUserLogout = () => setCurrentUser(null);
 
     window.addEventListener("user-login", handleUserLogin);
     window.addEventListener("user-logout", handleUserLogout);
@@ -72,7 +68,9 @@ export default function Navbar() {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);
       }
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+      const inDesktop = searchRefDesktop.current?.contains(e.target);
+      const inMobile = searchRefMobile.current?.contains(e.target);
+      if (!inDesktop && !inMobile) {
         setShowSearchDropdown(false);
       }
     };
@@ -80,81 +78,13 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ============================================
-  // 🔕 الإشعارات معلقة مؤقتاً
-  // ============================================
-  // تحميل الإشعارات من API
-  // useEffect(() => {
-  //   // فقط إذا كان هناك مستخدم مسجل دخول
-  //   if (!currentUser?.id) return;
-
-  //   // جلب الإشعارات مرة واحدة عند التحميل
-  //   const loadNotifications = async () => {
-  //     try {
-  //       await dispatch(fetchNotificationsAsync({ recipient_id: currentUser.id })).unwrap();
-  //       await dispatch(fetchUnreadCountAsync({ recipient_id: currentUser.id })).unwrap();
-  //     } catch (error) {
-  //       // تجاهل الأخطاء الصامتة - لا نطبع في console لتجنب الفوضى
-  //       // إذا كان الخطأ 500، سنتوقف عن إعادة المحاولة
-  //     }
-  //   };
-
-  //   loadNotifications();
-  // }, [dispatch, currentUser?.id]);
-
-  // إعادة جلب الإشعارات كل 30 ثانية (فقط إذا نجحت المحاولة الأولى)
-  // useEffect(() => {
-  //   if (!currentUser?.id) return;
-
-  //   let consecutiveErrors = 0;
-  //   const MAX_CONSECUTIVE_ERRORS = 3; // بعد 3 أخطاء متتالية، نتوقف
-
-  //   const interval = setInterval(async () => {
-  //     try {
-  //       await dispatch(fetchNotificationsAsync({ recipient_id: currentUser.id })).unwrap();
-  //       await dispatch(fetchUnreadCountAsync({ recipient_id: currentUser.id })).unwrap();
-  //       consecutiveErrors = 0; // نجحت، نعيد العداد
-  //     } catch (error) {
-  //       consecutiveErrors++;
-        
-  //       // إذا تجاوزنا الحد الأقصى للأخطاء، نتوقف عن إعادة المحاولة
-  //       if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-  //         clearInterval(interval);
-  //         // يمكن إضافة toast notification هنا لإعلام المستخدم
-  //         return;
-  //       }
-  //     }
-  //   }, 30000); // 30 ثانية
-
-  //   return () => clearInterval(interval);
-  // }, [dispatch, currentUser?.id]);
-
-  // 🔕 الإشعارات معلقة مؤقتاً
-  // const markAsRead = async (id) => {
-  //   if (!id || !currentUser?.id) return;
-    
-  //   try {
-  //     await dispatch(toggleNotificationReadAsync(id)).unwrap();
-  //     // إعادة جلب الإشعارات بعد التحديث
-  //     dispatch(fetchNotificationsAsync({ recipient_id: currentUser.id }));
-  //     dispatch(fetchUnreadCountAsync({ recipient_id: currentUser.id }));
-  //   } catch (error) {
-  //     // لا نعرض الأخطاء في Console لتجنب الفوضى
-  //     // console.error("Error toggling notification read status:", error);
-  //   }
-  // };
-
   const handleLogout = async () => {
     try {
-      // محاولة تسجيل الخروج (حتى لو فشل API، سيتم التنظيف المحلي في logoutAsync)
-      const result = await dispatch(logoutAsync());
-      
-      // سواء نجح أو فشل API، التنظيف المحلي تم بالفعل
+      await dispatch(logoutAsync());
       setCurrentUser(null);
       toast.success("تم تسجيل الخروج بنجاح");
       router.push("/login");
     } catch (error) {
-      // كإجراء احتياطي إضافي - تنظيف محلي
       console.warn("Logout error (performing local cleanup):", error);
       localStorage.removeItem("user");
       localStorage.removeItem("access_token");
@@ -168,171 +98,218 @@ export default function Navbar() {
   if (!mounted) return null;
 
   const isRtl = i18n?.language === "ar";
+  const displayName =
+    currentUser?.first_name ||
+    currentUser?.name ||
+    currentUser?.username ||
+    currentUser?.email ||
+    "";
   const fallbackInitial =
-    currentUser?.first_name?.[0]?.toUpperCase() ||
-    currentUser?.name?.[0]?.toUpperCase() ||
-    currentUser?.username?.[0]?.toUpperCase() ||
+    displayName?.[0]?.toUpperCase() ||
     currentUser?.email?.[0]?.toUpperCase() ||
     "U";
+  const roleLabel =
+    currentUser?.role === "university_admin" || currentUser?.role === "college_admin"
+      ? isRtl
+        ? "مسؤول الجامعة"
+        : "University Admin"
+      : null;
+  const isAdmin =
+    currentUser?.role === "university_admin" ||
+    currentUser?.role === "college_admin";
 
+  const submitSearch = (closeMobile = false) => {
+    if (!searchQuery.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    setShowSearchDropdown(false);
+    if (closeMobile) setMobileMenu(false);
+  };
+
+  const SearchField = ({
+    containerRef,
+    widthClass = "w-full",
+    maxResults = 5,
+    closeMobile = false,
+  }) => (
+    <div ref={containerRef} className={cx("relative", widthClass)}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitSearch(closeMobile);
+        }}
+        className="relative"
+      >
+        <Search
+          className="pointer-events-none absolute top-1/2 z-10 start-3 -translate-y-1/2 text-muted"
+          size={16}
+        />
+        <Input
+          type="text"
+          size="compact"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowSearchDropdown(e.target.value.trim().length > 0);
+          }}
+          onFocus={() => {
+            if (searchQuery.trim().length > 0) setShowSearchDropdown(true);
+          }}
+          placeholder={t("Navbar.searchPlaceholder") || "بحث..."}
+          className="border-border bg-background ps-9 pe-3 text-start focus:bg-surface"
+        />
+      </form>
+      {showSearchDropdown && searchQuery.trim() && (
+        <div className="absolute inset-x-0 top-full z-50 mt-1">
+          <SearchDropdown
+            query={searchQuery}
+            onClose={() => setShowSearchDropdown(false)}
+            maxResults={maxResults}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  const menuItemClass =
+    "flex w-full items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-text-secondary text-start transition-colors hover:bg-primary-muted hover:text-text";
+
+  const AvatarButton = ({ className }) => (
+    <button
+      type="button"
+      onClick={() => setMenuOpen(!menuOpen)}
+      aria-label="Profile menu"
+      aria-expanded={menuOpen}
+      className={cx(
+        "inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-1.5 pe-2",
+        "text-text transition-colors hover:bg-primary-muted/70",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+        className
+      )}
+    >
+      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary text-caption font-semibold text-primary-foreground">
+        {currentUser?.image ? (
+          <Image
+            src={currentUser.image}
+            alt="Profile"
+            width={28}
+            height={28}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        ) : (
+          fallbackInitial
+        )}
+      </span>
+      <span className="hidden min-w-0 max-w-[9rem] flex-col items-start sm:flex">
+        <span className="w-full truncate text-caption font-semibold leading-tight text-text">
+          {displayName || "User"}
+        </span>
+        {roleLabel ? (
+          <span className="w-full truncate text-[11px] leading-tight text-muted">
+            {roleLabel}
+          </span>
+        ) : null}
+      </span>
+      <ChevronDown
+        size={14}
+        className={cx(
+          "hidden text-muted transition-transform sm:block",
+          menuOpen && "rotate-180"
+        )}
+      />
+    </button>
+  );
 
   return (
     <>
       {/* === Navbar Desktop === */}
       <nav
         dir={isRtl ? "rtl" : "ltr"}
-        className="navbar-main hidden lg:flex fixed top-0 start-0 end-0 lg:start-64 px-6 py-4 items-center justify-between gap-6
-        bg-white dark:bg-dark border-b border-slate-200 dark:border-dark-lighter z-[60]"
+        className="navbar-main fixed top-0 start-0 end-0 z-[60] hidden h-16 items-center gap-4 border-b border-border bg-surface px-5 lg:start-64 lg:flex"
       >
-        {/* Logo */}
-        <div
-          className={`flex items-center gap-3 cursor-pointer flex-shrink-0 transition-opacity hover:opacity-80 ${isRtl ? "flex-row-reverse" : "flex-row"}`}
-          onClick={() => router.push("/")}
-        >
-          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-sky-100 dark:border-slate-700">
-            <Image
-              src="/Screenshot_٢٠٢٥٠٩٠٨-١٢٣٢٥٥.jpg"
-              alt={t("Navbar.logoAlt") || "MediSmile Logo"}
-              width={40}
-              height={40}
-              className="w-full h-full object-cover rounded-full"
+        {/* Search as primary navbar focus — brand lives in Sidebar */}
+        <div className="min-w-0 flex-1">
+          {currentUser ? (
+            <SearchField
+              containerRef={searchRefDesktop}
+              widthClass="w-full max-w-md"
+              maxResults={5}
             />
-          </div>
-          <span className="font-bold text-lg text-slate-900 dark:text-white">
-            MediSmile
-          </span>
+          ) : null}
         </div>
 
         {currentUser && (
-          <div className={`flex items-center gap-3 flex-shrink-0 ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-            {/* Search with Dropdown */}
-            <div ref={searchRef} className="relative">
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (searchQuery.trim()) {
-                    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                    setShowSearchDropdown(false);
-                  }
-                }}
-                className="relative"
-              >
-                <Search className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? "right-3" : "left-3"} text-slate-400`} size={18} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowSearchDropdown(e.target.value.trim().length > 0);
-                  }}
-                  onFocus={() => {
-                    if (searchQuery.trim().length > 0) {
-                      setShowSearchDropdown(true);
-                    }
-                  }}
-                  placeholder={t("Navbar.searchPlaceholder") || "بحث..."}
-                  className={`${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 rounded-lg border border-slate-200 dark:border-slate-600
-                       bg-white dark:bg-dark-light
-                       placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white focus:outline-none 
-                       focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 
-                       w-[240px] text-sm transition-all duration-200 text-start`}
-                />
-              </form>
-              {showSearchDropdown && searchQuery.trim() && (
-                <SearchDropdown 
-                  query={searchQuery} 
-                  onClose={() => setShowSearchDropdown(false)}
-                  maxResults={5}
-                />
-              )}
-            </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <ToggleTheme />
 
-            {/* تبديل الوضع الليلي/النهاري */}
-            <div className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <ToggleTheme />
-            </div>
+            <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden />
 
-            {/* Profile */}
-            <div
-              ref={menuRef}
-              className="relative flex items-center"
-            >
-              <button
-                className="h-10 w-10 rounded-full bg-sky-600 dark:bg-sky-700 
-                         flex items-center justify-center text-white font-semibold cursor-pointer 
-                         overflow-hidden transition-all duration-200 hover:bg-sky-700 dark:hover:bg-sky-600
-                         hover:ring-2 hover:ring-sky-500/30 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
-                onClick={() => setMenuOpen(!menuOpen)}
-                aria-label="Profile menu"
-              >
-                {currentUser?.image ? (
-                  <Image
-                    src={currentUser.image}
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover rounded-full"
-                    onError={(e) => {
-                      // في حالة فشل تحميل الصورة، نخفي الصورة ونعرض الحرف
-                      const button = e.target.closest("button");
-                      const image = button?.querySelector("img");
-                      const span = button?.querySelector("span");
-                      if (image) image.style.display = "none";
-                      if (span) span.style.display = "flex";
-                    }}
-                  />
-                ) : null}
-                <span className={`text-sm ${currentUser?.image ? "hidden" : "flex"}`}>
-                  {fallbackInitial}
-                </span>
-              </button>
+            <div ref={menuRef} className="relative">
+              <AvatarButton />
 
               <AnimatePresence>
                 {menuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute top-12 end-0 w-56 
-                               bg-white dark:bg-dark-light rounded-lg border border-slate-200 dark:border-slate-700 z-50
-                               flex flex-col py-1.5 overflow-hidden shadow-lg"
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.14 }}
+                    className="absolute end-0 top-11 z-50 w-64 overflow-hidden rounded-xl border border-border bg-surface shadow-lg"
                   >
-                    {/* هذا المشروع خاص فقط بإدارة الجامعة */}
-                    {(currentUser.role === "university_admin" || currentUser.role === "college_admin") && (
+                    <div className="border-b border-border px-3 py-3">
+                      <p className="m-0 truncate text-sm font-semibold text-text">
+                        {displayName || "User"}
+                      </p>
+                      {currentUser?.email ? (
+                        <p className="m-0 mt-0.5 truncate text-caption text-muted">
+                          {currentUser.email}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-col py-1.5">
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            router.push("/");
+                            setMenuOpen(false);
+                          }}
+                          className={menuItemClass}
+                        >
+                          <LayoutDashboard size={16} className="text-muted" />
+                          {isRtl ? "لوحة إدارة الجامعة" : "University Dashboard"}
+                        </button>
+                      )}
                       <button
+                        type="button"
                         onClick={() => {
-                          router.push("/");
+                          router.push("/profile");
                           setMenuOpen(false);
                         }}
-                        className="px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 
-                                 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium text-start"
+                        className={menuItemClass}
                       >
-                        لوحة إدارة الجامعة
+                        <UserRound size={16} className="text-muted" />
+                        {t("Navbar.profile") || "الملف الشخصي"}
                       </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        router.push("/profile");
-                        setMenuOpen(false);
-                      }}
-                      className="px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 
-                               transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium text-start"
-                    >
-                      {t("Navbar.profile") || "الملف الشخصي"}
-                    </button>
-                    <div className="border-t border-slate-200 dark:border-slate-700 my-1.5"></div>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setMenuOpen(false);
-                      }}
-                      className={`px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 
-                               transition-colors text-red-600 dark:text-red-400 text-sm font-medium
-                               ${isRtl ? "text-right" : "text-left"}`}
-                    >
-                      {t("Navbar.logout") || "تسجيل الخروج"}
-                    </button>
+                    </div>
+
+                    <div className="border-t border-border py-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleLogout();
+                          setMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-danger text-start transition-colors hover:bg-danger/10"
+                      >
+                        <LogOut size={16} />
+                        {t("Navbar.logout") || "تسجيل الخروج"}
+                      </button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -344,153 +321,131 @@ export default function Navbar() {
       {/* === Navbar Mobile === */}
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className="navbar-mobile lg:hidden fixed top-0 start-0 w-full bg-white dark:bg-dark px-4 py-3.5 flex justify-between items-center border-b border-slate-200 dark:border-dark-lighter z-[60]"
+        className="navbar-mobile fixed top-0 start-0 z-[60] flex h-14 w-full items-center justify-between gap-3 border-b border-border bg-surface px-3 lg:hidden"
       >
-        {/* Logo */}
         <div
-          className={`flex items-center gap-2.5 cursor-pointer transition-opacity hover:opacity-80 ${isRtl ? "flex-row-reverse" : "flex-row"}`}
+          className={cx(
+            "flex min-w-0 cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-80",
+            isRtl ? "flex-row-reverse" : "flex-row"
+          )}
           onClick={() => router.push("/")}
         >
-          <div className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-sky-100 dark:border-slate-700">
+          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border bg-primary-muted">
             <Image
               src="/Screenshot_٢٠٢٥٠٩٠٨-١٢٣٢٥٥.jpg"
               alt={t("Navbar.logoAlt") || "MediSmile Logo"}
               width={36}
               height={36}
-              className="w-full h-full object-cover rounded-full"
+              className="h-full w-full object-cover"
             />
           </div>
-          <span className="font-bold text-base text-slate-900 dark:text-white">
-            MediSmile
+          <span className="truncate text-sm font-bold text-text">
+            {t("Root.title") || "MediSmile"}
           </span>
         </div>
 
-        {/* Right side: notifications + menu */}
-        <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* 🔕 إشعارات - معلقة مؤقتاً */}
           {/* {currentUser && <NotificationBell />} */}
 
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setMobileMenu(!mobileMenu)}
-            className="p-2 rounded-lg bg-white dark:bg-dark-light border border-slate-200 dark:border-slate-600
-              hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 
-              transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+            className="px-2 text-text-secondary"
             aria-label="Toggle menu"
+            aria-expanded={mobileMenu}
           >
-            {mobileMenu ? <X size={20} /> : <Menu size={20} />}
-          </button>
+            {mobileMenu ? <X size={18} /> : <Menu size={18} />}
+          </Button>
         </div>
       </div>
 
-      {/* === Mobile Menu - أفقي في الأسفل === */}
+      {/* === Mobile Menu Panel === */}
       <AnimatePresence>
         {mobileMenu && (
           <>
-            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
               onClick={() => setMobileMenu(false)}
             />
-            
-            {/* Menu - أفقي في الأعلى */}
+
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.18 }}
               dir={isRtl ? "rtl" : "ltr"}
-              className="fixed top-14 start-0 end-0 bg-white dark:bg-dark z-50 border-b border-slate-200 dark:border-slate-700 shadow-2xl lg:hidden"
+              className="fixed top-14 start-0 end-0 z-50 border-b border-border bg-surface shadow-xl lg:hidden"
             >
               {currentUser && (
-                <div className="px-3 py-3">
-                  {/* Search */}
-                  <div className="mb-3 relative">
-                    <form 
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (searchQuery.trim()) {
-                          router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                          setMobileMenu(false);
-                          setShowSearchDropdown(false);
-                        }
-                      }}
-                    >
-                      <Search className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? "right-3" : "left-3"} text-slate-400`} size={18} />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowSearchDropdown(e.target.value.trim().length > 0);
-                        }}
-                        onFocus={() => {
-                          if (searchQuery.trim().length > 0) {
-                            setShowSearchDropdown(true);
-                          }
-                        }}
-                        placeholder={t("Navbar.searchPlaceholder") || "بحث..."}
-                        className={`${isRtl ? "pr-10 pl-3" : "pl-10 pr-3"} w-full py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-dark-light 
-                          text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none 
-                          focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 focus:border-sky-500 dark:focus:border-sky-400 text-sm text-start transition-all duration-200`}
-                      />
-                    </form>
-                    {showSearchDropdown && searchQuery.trim() && (
-                      <div className="absolute top-full left-0 right-0 mt-1 z-50">
-                        <SearchDropdown 
-                          query={searchQuery} 
-                          onClose={() => setShowSearchDropdown(false)}
-                          maxResults={3}
-                        />
+                <div className="flex flex-col gap-3 px-3 py-3">
+                  <SearchField
+                    containerRef={searchRefMobile}
+                    maxResults={3}
+                    closeMobile
+                  />
+
+                  <div className="rounded-xl border border-border bg-background p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+                        {fallbackInitial}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="m-0 truncate text-sm font-semibold text-text">
+                          {displayName || "User"}
+                        </p>
+                        {roleLabel ? (
+                          <p className="m-0 truncate text-caption text-muted">
+                            {roleLabel}
+                          </p>
+                        ) : null}
                       </div>
-                    )}
+                      <div onClick={() => setMobileMenu(false)}>
+                        <ToggleTheme />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Menu Items - أفقي */}
-                  <div className={`flex items-center gap-2 overflow-x-auto pb-2 ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-                    {/* Theme Toggle */}
-                    <div
-                      className="flex-shrink-0"
-                      onClick={() => setMobileMenu(false)}
-                    >
-                      <ToggleTheme />
-                    </div>
-
-                    {/* لوحة إدارة الجامعة */}
-                    {(currentUser.role === "university_admin" || currentUser.role === "college_admin") && (
+                  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+                    {isAdmin && (
                       <button
+                        type="button"
                         onClick={() => {
                           router.push("/");
                           setMobileMenu(false);
                         }}
-                        className="flex-shrink-0 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium whitespace-nowrap"
+                        className={menuItemClass}
                       >
-                        لوحة الإدارة
+                        <LayoutDashboard size={16} className="text-muted" />
+                        {isRtl ? "لوحة الإدارة" : "Dashboard"}
                       </button>
                     )}
-
-                    {/* الملف الشخصي */}
                     <button
+                      type="button"
                       onClick={() => {
                         router.push("/profile");
                         setMobileMenu(false);
                       }}
-                      className="flex-shrink-0 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium whitespace-nowrap"
+                      className={cx(menuItemClass, "border-t border-border")}
                     >
+                      <UserRound size={16} className="text-muted" />
                       {t("Navbar.profile") || "الملف الشخصي"}
                     </button>
-
-                    {/* تسجيل الخروج */}
                     <button
+                      type="button"
                       onClick={() => {
                         handleLogout();
                         setMobileMenu(false);
                       }}
-                      className="flex-shrink-0 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400 text-sm font-medium whitespace-nowrap ml-auto"
+                      className="flex w-full items-center gap-2.5 border-t border-border px-3 py-2.5 text-sm font-medium text-danger text-start transition-colors hover:bg-danger/10"
                     >
+                      <LogOut size={16} />
                       {t("Navbar.logout") || "تسجيل الخروج"}
                     </button>
                   </div>

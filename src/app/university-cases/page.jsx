@@ -1,16 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Filter, Search, FileSpreadsheet } from "lucide-react";
+import { Search, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { fetchCases } from "../../redux/features/clinicalCases/clinicalCasesSlice";
 import RoleGuard from "@/components/RoleGuard";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import {
+  Button,
+  Input,
+  Badge,
+  Card,
+  DataTable,
+  DataTableHead,
+  DataTableTh,
+  DataTableBody,
+  DataTableRow,
+  DataTableTd,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
+
+const selectClass =
+  "h-10 w-full rounded-md border border-border bg-surface px-3 text-body-sm text-text " +
+  "focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25 " +
+  "disabled:opacity-50";
 
 export default function UniversityCasesPage() {
   return (
@@ -21,8 +39,7 @@ export default function UniversityCasesPage() {
 }
 
 function UniversityCasesContent() {
-  const { t, i18n } = useTranslation();
-  const router = useRouter();
+  const { i18n } = useTranslation();
   const dispatch = useDispatch();
   const { cases, loading, error } = useSelector((state) => state.clinicalCases);
 
@@ -72,37 +89,29 @@ function UniversityCasesContent() {
   // Helper function لتنسيق الحالة
   const getStatusBadge = (status) => {
     const statusMap = {
-      new: { label: "جديدة", color: "bg-blue-500" },
-      accepted: { label: "مقبولة", color: "bg-green-500" },
-      rejected: { label: "مرفوضة", color: "bg-red-500" },
-      needs_assignment_approval: { label: "تحتاج موافقة إسناد", color: "bg-yellow-500" },
-      assigned: { label: "مسندة", color: "bg-purple-500" },
-      in_progress: { label: "قيد التنفيذ", color: "bg-indigo-500" },
-      completed: { label: "مكتملة", color: "bg-emerald-500" },
-      closed: { label: "مغلقة", color: "bg-gray-500" },
+      new: { label: "جديدة", variant: "info" },
+      accepted: { label: "مقبولة", variant: "success" },
+      rejected: { label: "مرفوضة", variant: "danger" },
+      needs_assignment_approval: { label: "تحتاج موافقة إسناد", variant: "warning" },
+      assigned: { label: "مسندة", variant: "primary" },
+      in_progress: { label: "قيد التنفيذ", variant: "info" },
+      completed: { label: "مكتملة", variant: "success" },
+      closed: { label: "مغلقة", variant: "default" },
     };
-    const statusInfo = statusMap[status] || { label: status, color: "bg-gray-500" };
-    return (
-      <span className={`px-2 py-1 rounded text-xs text-white ${statusInfo.color}`}>
-        {statusInfo.label}
-      </span>
-    );
+    const statusInfo = statusMap[status] || { label: status, variant: "default" };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
   // Helper function للأولوية
   const getPriorityBadge = (priority) => {
     const priorityMap = {
-      low: { label: "منخفضة", color: "bg-green-500" },
-      medium: { label: "متوسطة", color: "bg-yellow-500" },
-      high: { label: "عالية", color: "bg-orange-500" },
-      urgent: { label: "عاجلة", color: "bg-red-500" },
+      low: { label: "منخفضة", variant: "success" },
+      medium: { label: "متوسطة", variant: "warning" },
+      high: { label: "عالية", variant: "warning" },
+      urgent: { label: "عاجلة", variant: "danger" },
     };
-    const priorityInfo = priorityMap[priority] || { label: priority, color: "bg-gray-500" };
-    return (
-      <span className={`px-2 py-1 rounded text-xs text-white ${priorityInfo.color}`}>
-        {priorityInfo.label}
-      </span>
-    );
+    const priorityInfo = priorityMap[priority] || { label: priority, variant: "default" };
+    return <Badge variant={priorityInfo.variant}>{priorityInfo.label}</Badge>;
   };
 
   // Helper function لتنسيق التاريخ
@@ -188,66 +197,76 @@ function UniversityCasesContent() {
 
   if (!mounted)
     return (
-      <div className="p-4 sm:p-6 min-h-screen bg-sky-50 dark:bg-slate-900"></div>
+      <div className="min-h-screen bg-background p-4 sm:p-6"></div>
     );
 
   const isRtl = i18n?.language === "ar";
+  const emptyMessage =
+    cases.length === 0 ? "لا توجد حالات" : "لا توجد حالات تطابق البحث";
 
   return (
     <AnimatedWrapper>
       <div
-        className={`p-4 sm:p-6 lg:p-8 min-h-screen ${
+        className={`min-h-screen p-4 sm:p-6 lg:p-8 ${
           isRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto">
+        <div className="mx-auto max-w-[1400px] space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-sky-700 to-sky-500 dark:from-sky-400 dark:to-sky-600 bg-clip-text text-transparent">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <h1 className="text-h1 text-text">
                 حالات الجامعة السريرية
               </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              <p className="text-body-sm text-text-secondary">
                 {filters.needsSupervisor 
                   ? `حالات تحتاج تعيين مشرف (${filteredCases.length})`
                   : `جميع حالات جامعتك (${filteredCases.length})`}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {filteredCases.length > 0 && (
-                <button
+                <Button
+                  variant="secondary"
                   onClick={handleExportExcel}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium text-sm"
+                  className="border-success/30 bg-success/15 text-success hover:bg-success/20"
                 >
                   <FileSpreadsheet size={18} />
-                  <span>تصدير Excel</span>
-                </button>
+                  تصدير Excel
+                </Button>
               )}
-              <button
+              <Button
+                variant={filters.needsSupervisor ? "primary" : "outline"}
                 onClick={() => setFilters({ ...filters, needsSupervisor: !filters.needsSupervisor })}
-                className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2 ${
+                className={
                   filters.needsSupervisor
-                    ? "bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white"
-                    : "bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300"
-                }`}
+                    ? "bg-warning hover:opacity-90 border-transparent text-primary-foreground"
+                    : undefined
+                }
               >
                 {filters.needsSupervisor ? "عرض الكل" : "حالات تحتاج مشرف"}
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card padding className="!p-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
-                <input
+                <Search
+                  className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${
+                    isRtl ? "right-3" : "left-3"
+                  }`}
+                  size={16}
+                  aria-hidden
+                />
+                <Input
                   type="text"
                   placeholder="بحث..."
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className={isRtl ? "pr-10" : "pl-10"}
                 />
               </div>
 
@@ -256,7 +275,7 @@ function UniversityCasesContent() {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className={selectClass}
                 >
                   <option value="">جميع الحالات</option>
                   <option value="new">جديدة</option>
@@ -275,7 +294,7 @@ function UniversityCasesContent() {
                 <select
                   value={filters.priority}
                   onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className={selectClass}
                 >
                   <option value="">جميع الأولويات</option>
                   <option value="low">منخفضة</option>
@@ -287,82 +306,76 @@ function UniversityCasesContent() {
 
               {/* Reset Filters */}
               <div>
-                <button
+                <Button
+                  variant="outline"
+                  className="w-full"
                   onClick={() => setFilters({ status: "", priority: "", search: "", needsSupervisor: false })}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   إعادة تعيين
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-500/50 rounded-xl text-red-700 dark:text-red-400">
+            <div className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-body-sm text-danger">
               {error}
             </div>
           )}
 
           {/* Loading */}
-          {loading && cases.length === 0 && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-blue-500" size={32} />
-            </div>
-          )}
+          {loading && cases.length === 0 && <DataTableLoading />}
 
-          {/* Table */}
+          {/* Table — desktop/tablet */}
           {!loading && (
-            <div className="overflow-x-auto rounded-2xl border-2 border-sky-200/50 dark:border-dark-lighter shadow-2xl">
-              <table
-                className={`w-full text-sm text-slate-900 dark:text-slate-200 min-w-[700px] ${
-                  isRtl ? "text-right" : "text-left"
-                }`}
-                dir={isRtl ? "rtl" : "ltr"}
-              >
-                <thead className="bg-gradient-to-r from-sky-700 via-sky-600 to-sky-700 dark:from-dark-lighter dark:via-dark-light dark:to-dark-lighter text-white">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">العنوان</th>
-                    <th className="px-6 py-4 font-semibold">المريض</th>
-                    <th className="px-6 py-4 font-semibold">الطالب</th>
-                    <th className="px-6 py-4 font-semibold">المشرف</th>
-                    <th className="px-6 py-4 font-semibold">الحالة</th>
-                    <th className="px-6 py-4 font-semibold">الأولوية</th>
-                    <th className="px-6 py-4 font-semibold">التاريخ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCases && filteredCases.length > 0 ? (
-                    filteredCases.map((c, idx) => (
-                      <motion.tr
+            <div className="hidden sm:block">
+              {filteredCases && filteredCases.length > 0 ? (
+                <DataTable dir={isRtl ? "rtl" : "ltr"} minWidth="700px">
+                  <DataTableHead>
+                    <tr>
+                      <DataTableTh>العنوان</DataTableTh>
+                      <DataTableTh>المريض</DataTableTh>
+                      <DataTableTh>الطالب</DataTableTh>
+                      <DataTableTh>المشرف</DataTableTh>
+                      <DataTableTh>الحالة</DataTableTh>
+                      <DataTableTh>الأولوية</DataTableTh>
+                      <DataTableTh>التاريخ</DataTableTh>
+                    </tr>
+                  </DataTableHead>
+                  <DataTableBody>
+                    {filteredCases.map((c, idx) => (
+                      <DataTableRow
+                        as={motion.tr}
                         key={c.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, delay: idx * 0.02 }}
-                        className={`${
-                          idx % 2 === 0
-                            ? "bg-sky-50/50 dark:bg-dark-light/30"
-                            : "bg-white dark:bg-dark-light"
-                        } border-b border-sky-200/50 dark:border-dark-lighter hover:bg-gradient-to-r hover:from-sky-100/50 hover:to-sky-200/50 dark:hover:from-dark-lighter transition-all duration-300`}
+                        transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.24) }}
                       >
-                        <td className="px-6 py-4 font-medium">
+                        <DataTableTd className="font-medium">
                           {(!c.supervisor_id && !c.supervisor) ? (
                             <a
                               href={`/university-cases/${c.id}`}
-                              className="text-sky-700 dark:text-sky-300 hover:underline cursor-pointer"
+                              className="text-primary hover:underline"
                             >
                               {c.title || "-"}
                             </a>
                           ) : (
-                            c.title || "-"
+                            <span className="text-text">{c.title || "-"}</span>
                           )}
-                        </td>
-                        <td className="px-6 py-4">{c.patient_name || "-"}</td>
-                        <td className="px-6 py-4">{c.student_name || "-"}</td>
-                        <td className="px-6 py-4">{c.supervisor_name || "-"}</td>
-                        <td className="px-6 py-4">{getStatusBadge(c.status)}</td>
-                        <td className="px-6 py-4">{getPriorityBadge(c.priority)}</td>
-                        <td className="px-6 py-4">
+                        </DataTableTd>
+                        <DataTableTd className="text-text-secondary">
+                          {c.patient_name || "-"}
+                        </DataTableTd>
+                        <DataTableTd className="text-text-secondary">
+                          {c.student_name || "-"}
+                        </DataTableTd>
+                        <DataTableTd className="text-text-secondary">
+                          {c.supervisor_name || "-"}
+                        </DataTableTd>
+                        <DataTableTd>{getStatusBadge(c.status)}</DataTableTd>
+                        <DataTableTd>{getPriorityBadge(c.priority)}</DataTableTd>
+                        <DataTableTd className="text-text-secondary tabular-nums whitespace-nowrap">
                           {c.created_at
                             ? new Date(c.created_at).toLocaleDateString("ar-SA", {
                                 year: "numeric",
@@ -370,70 +383,54 @@ function UniversityCasesContent() {
                                 day: "numeric",
                               })
                             : "-"}
-                        </td>
-                      </motion.tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="text-center py-6 text-slate-500 dark:text-slate-400"
-                      >
-                        {cases.length === 0
-                          ? "لا توجد حالات"
-                          : "لا توجد حالات تطابق البحث"}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        </DataTableTd>
+                      </DataTableRow>
+                    ))}
+                  </DataTableBody>
+                </DataTable>
+              ) : (
+                <DataTableEmpty>{emptyMessage}</DataTableEmpty>
+              )}
             </div>
           )}
 
           {/* Mobile Cards */}
           {!loading && (
-            <div className="sm:hidden grid gap-4 mt-4">
+            <div className="grid gap-3 sm:hidden">
               {filteredCases && filteredCases.length > 0 ? (
                 filteredCases.map((c) => (
                   <motion.div
                     key={c.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-dark-light rounded-2xl shadow-lg p-5 border-2 border-sky-200/50 dark:border-dark-lighter"
                   >
-                    <h3 className="font-bold text-lg mb-2">
-                      {(!c.supervisor_id && !c.supervisor) ? (
-                        <a
-                          href={`/university-cases/${c.id}`}
-                          className="text-sky-700 dark:text-sky-300 hover:underline cursor-pointer"
-                        >
-                          {c.title || "-"}
-                        </a>
-                      ) : (
-                        c.title || "-"
-                      )}
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                      المريض: {c.patient_name || "-"}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                      الطالب: {c.student_name || "-"}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                      المشرف: {c.supervisor_name || "-"}
-                    </p>
-                    <div className="flex gap-2 mt-3">
-                      {getStatusBadge(c.status)}
-                      {getPriorityBadge(c.priority)}
-                    </div>
+                    <Card className="!p-4">
+                      <h3 className="mb-2 text-h3 text-text">
+                        {(!c.supervisor_id && !c.supervisor) ? (
+                          <a
+                            href={`/university-cases/${c.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {c.title || "-"}
+                          </a>
+                        ) : (
+                          c.title || "-"
+                        )}
+                      </h3>
+                      <div className="space-y-1 text-body-sm text-text-secondary">
+                        <p>المريض: {c.patient_name || "-"}</p>
+                        <p>الطالب: {c.student_name || "-"}</p>
+                        <p>المشرف: {c.supervisor_name || "-"}</p>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {getStatusBadge(c.status)}
+                        {getPriorityBadge(c.priority)}
+                      </div>
+                    </Card>
                   </motion.div>
                 ))
               ) : (
-                <p className="text-center py-6 text-slate-500 dark:text-slate-400">
-                  {cases.length === 0
-                    ? "لا توجد حالات"
-                    : "لا توجد حالات تطابق البحث"}
-                </p>
+                <DataTableEmpty>{emptyMessage}</DataTableEmpty>
               )}
             </div>
           )}
@@ -442,8 +439,3 @@ function UniversityCasesContent() {
     </AnimatedWrapper>
   );
 }
-
-
-
-
-

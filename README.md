@@ -69,7 +69,7 @@ npm run lint
 مثال:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=https://your-api.example.com/api
+NEXT_PUBLIC_API_BASE_URL=https://api.medismile.xn--mgbaab0cxheq.tech/api
 ```
 
 ---

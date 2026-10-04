@@ -7,35 +7,42 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Search,
-  Filter,
   Eye,
   Trash2,
   X,
-  Save,
   Loader2,
   FileText,
   Calendar,
   User,
   Download,
-  PlusCircle,
   FileSpreadsheet,
 } from "lucide-react";
 import {
   fetchReportsAsync,
-  createReportAsync,
-  updateReportAsync,
   deleteReportAsync,
   fetchReportByIdAsync,
   clearError,
-  setFilters,
-  clearFilters,
 } from "../../redux/features/reports/reportsSlice";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import {
+  Button,
+  Input,
+  Badge,
+  Card,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import toast from "react-hot-toast";
 import RoleGuard from "@/components/RoleGuard";
 import { useRole } from "@/hooks/useRole";
 import { fetchUniversityAdminProfile } from "@/services/universityApi";
 import * as XLSX from "xlsx";
+
+const selectClass =
+  "h-10 w-full rounded-md border border-border bg-surface px-3 text-body-sm text-text " +
+  "focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25";
+
+const labelClass = "mb-1.5 block text-caption font-semibold text-muted";
 
 export default function ReportsPage() {
   return (
@@ -63,7 +70,6 @@ function ReportsContent() {
 
   // State
   const [showDetails, setShowDetails] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [reportTypeFilter, setReportTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -213,17 +219,26 @@ function ReportsContent() {
   // Helper function لتنسيق نوع التقرير
   const getReportTypeBadge = (type) => {
     const typeMap = {
-      academic: { label: t("Reports.types.academic"), color: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400" },
-      clinical: { label: t("Reports.types.clinical"), color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
-      progress: { label: t("Reports.types.progress"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
-      summary: { label: t("Reports.types.summary"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
+      academic: { label: t("Reports.types.academic"), variant: "info" },
+      clinical: { label: t("Reports.types.clinical"), variant: "success" },
+      progress: { label: t("Reports.types.progress"), variant: "warning" },
+      summary: { label: t("Reports.types.summary"), variant: "primary" },
+      clinical_case: { label: "حالة سريرية", variant: "success" },
     };
-    const typeInfo = typeMap[type] || { label: type, color: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300" };
-    return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${typeInfo.color}`}>
-        {typeInfo.label}
-      </span>
-    );
+    const typeInfo = typeMap[type] || { label: type, variant: "default" };
+    return <Badge variant={typeInfo.variant}>{typeInfo.label}</Badge>;
+  };
+
+  const getStatusBadge = (status) => {
+    const map = {
+      draft: { label: "مسودة", variant: "warning" },
+      submitted: { label: "مقدمة", variant: "info" },
+      approved: { label: "موافق عليها", variant: "success" },
+      rejected: { label: "مرفوضة", variant: "danger" },
+      locked: { label: "مقفلة", variant: "default" },
+    };
+    const info = map[status] || { label: status, variant: "default" };
+    return <Badge variant={info.variant}>{info.label}</Badge>;
   };
 
   // Helper function لتنسيق التاريخ
@@ -318,7 +333,7 @@ function ReportsContent() {
   };
 
   if (!mounted) {
-    return <div className="p-4 min-h-screen bg-sky-50 dark:bg-dark"></div>;
+    return <div className="min-h-screen bg-background p-4"></div>;
   }
 
   const isRtl = i18n?.language === "ar";
@@ -326,61 +341,68 @@ function ReportsContent() {
   return (
     <AnimatedWrapper>
       <div
-        className={`p-4 sm:p-6 lg:p-8 min-h-screen bg-sky-50 dark:bg-dark ${
+        className={`min-h-screen bg-background p-4 sm:p-6 lg:p-8 ${
           isRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto">
+        <div className="mx-auto max-w-[1400px] space-y-6">
           {/* Header */}
-          <div className={`mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${isRtl ? "sm:flex-row-reverse" : ""}`}>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <h1 className="text-h1 text-text">
                 {t("Reports.title")}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+              <p className="text-body-sm text-text-secondary">
                 {filteredReports.length} {t("Reports.total")}
               </p>
             </div>
             {filteredReports.length > 0 && (
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleExportExcel}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium text-sm ${isRtl ? "flex-row-reverse" : ""}`}
+                className="border-success/30 bg-success/15 text-success hover:bg-success/20"
               >
                 <FileSpreadsheet size={18} />
-                <span>تصدير Excel</span>
-              </button>
+                تصدير Excel
+              </Button>
             )}
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-light rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className={`flex flex-wrap gap-4 items-end ${isRtl ? "flex-row-reverse" : ""}`}>
+          <Card padding className="!p-4 sm:!p-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {/* Search */}
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div className="sm:col-span-2 lg:col-span-1">
+                <label className={labelClass}>
                   {t("actions.search")}
                 </label>
                 <div className="relative">
-                  <Search className={`absolute top-1/2 transform -translate-y-1/2 text-slate-400 ${isRtl ? "right-3" : "left-3"}`} size={18} />
-                  <input
+                  <Search
+                    className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${
+                      isRtl ? "right-3" : "left-3"
+                    }`}
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
                     type="text"
                     placeholder={t("Reports.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full ${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200`}
+                    className={isRtl ? "pr-10" : "pl-10"}
                   />
                 </div>
               </div>
 
               {/* Report Type Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div>
+                <label className={labelClass}>
                   {t("Reports.type")}
                 </label>
                 <select
                   value={reportTypeFilter}
                   onChange={(e) => setReportTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all")}</option>
                   <option value="academic">{t("Reports.types.academic")}</option>
@@ -391,14 +413,14 @@ function ReportsContent() {
               </div>
 
               {/* Status Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div>
+                <label className={labelClass}>
                   {t("Reports.status")}
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all")}</option>
                   <option value="draft">مسودة</option>
@@ -410,14 +432,12 @@ function ReportsContent() {
               </div>
 
               {/* Target Type Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  نوع الهدف
-                </label>
+              <div>
+                <label className={labelClass}>نوع الهدف</label>
                 <select
                   value={targetTypeFilter}
                   onChange={(e) => setTargetTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all")}</option>
                   <option value="case">حالة سريرية</option>
@@ -426,140 +446,127 @@ function ReportsContent() {
                 </select>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-600 dark:border-red-500 rounded-xl text-red-600 dark:text-red-400">
-              <div className="flex justify-between items-center">
+            <div className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-body-sm text-danger">
+              <div className="flex items-center justify-between gap-3">
                 <span>{error}</span>
-                <button onClick={() => dispatch(clearError())} className="text-red-600 hover:text-red-600/80">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-danger"
+                  onClick={() => dispatch(clearError())}
+                  aria-label="Dismiss"
+                >
                   ×
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
           {/* Loading State */}
-          {loading && reports.length === 0 && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-blue-600 dark:text-blue-400" size={32} />
-            </div>
-          )}
+          {loading && reports.length === 0 && <DataTableLoading />}
 
           {/* Reports List */}
           {!loading && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filteredReports.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-12 text-center border border-sky-200 dark:border-slate-700">
-                  <FileText size={48} className="mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <p className="text-sky-600 dark:text-sky-400 text-lg">
-                    {t("Reports.noReports")}
-                  </p>
-                </div>
+                <DataTableEmpty>
+                  <FileText size={40} className="mx-auto mb-3 text-muted" />
+                  <p className="text-body-sm text-muted">{t("Reports.noReports")}</p>
+                </DataTableEmpty>
               ) : (
-                filteredReports.map((report) => (
+                filteredReports.map((report, idx) => (
                   <motion.div
                     key={report.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-dark-light rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200"
+                    transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.2) }}
                   >
-                    <div className={`flex flex-col sm:flex-row justify-between gap-4 ${isRtl ? "sm:flex-row-reverse" : ""}`}>
-                      <div className="flex-1">
-                        <div className={`flex items-center gap-3 mb-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                            <Link 
-                              href={`/reports/${report.id}`}
-                              className="hover:text-sky-700 dark:hover:text-sky-300 transition-colors"
-                            >
-                              {report.title || "-"}
-                            </Link>
-                          </h3>
-                          {getReportTypeBadge(report.report_type)}
-                          {report.status && (
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                              report.status === "draft" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                              report.status === "submitted" ? "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400" :
-                              report.status === "approved" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                              report.status === "rejected" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
-                              report.status === "locked" ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" :
-                              "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
-                            }`}>
-                              {report.status === "draft" ? "مسودة" :
-                               report.status === "submitted" ? "مقدمة" :
-                               report.status === "approved" ? "موافق عليها" :
-                               report.status === "rejected" ? "مرفوضة" :
-                               report.status === "locked" ? "مقفلة" :
-                               report.status}
+                    <Card className="!p-4 sm:!p-5 transition-colors hover:bg-primary-muted/20">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className={`mb-2 flex flex-wrap items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+                            <h3 className="text-h3 text-text">
+                              <Link
+                                href={`/reports/${report.id}`}
+                                className="hover:text-primary"
+                              >
+                                {report.title || "-"}
+                              </Link>
+                            </h3>
+                            {getReportTypeBadge(report.report_type)}
+                            {report.status ? getStatusBadge(report.status) : null}
+                          </div>
+                          <p className="mb-3 text-body-sm text-text-secondary">
+                            {report.description || "-"}
+                          </p>
+                          <div className={`mb-2 flex flex-wrap gap-x-4 gap-y-2 text-caption text-muted ${isRtl ? "flex-row-reverse" : ""}`}>
+                            {report.student_name && (
+                              <span className={`inline-flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                <User size={14} className="text-primary" />
+                                <strong className="text-text-secondary">{t("Reports.student")}:</strong> {report.student_name}
+                              </span>
+                            )}
+                            {report.supervisor_name && (
+                              <span className={`inline-flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                <User size={14} className="text-primary" />
+                                <strong className="text-text-secondary">المشرف:</strong> {report.supervisor_name}
+                              </span>
+                            )}
+                            {report.university_name && (
+                              <span className={`inline-flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                <User size={14} className="text-primary" />
+                                <strong className="text-text-secondary">الجامعة:</strong> {report.university_name}
+                              </span>
+                            )}
+                            {report.score !== null && report.score !== undefined && (
+                              <span className={`inline-flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                <FileText size={14} className="text-primary" />
+                                <strong className="text-text-secondary">النتيجة:</strong> {report.score}/100
+                              </span>
+                            )}
+                            <span className={`inline-flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
+                              <Calendar size={14} className="text-primary" />
+                              <strong className="text-text-secondary">{t("Reports.date")}:</strong> {formatDate(report.created_at)}
                             </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
-                          {report.description || "-"}
-                        </p>
-                        <div className={`flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          {report.student_name && (
-                            <span className={`flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
-                              <User size={16} className="text-sky-600 dark:text-sky-400" />
-                              <strong className="font-semibold">{t("Reports.student")}:</strong> {report.student_name}
-                            </span>
-                          )}
-                          {report.supervisor_name && (
-                            <span className={`flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
-                              <User size={16} className="text-sky-600 dark:text-sky-400" />
-                              <strong className="font-semibold">المشرف:</strong> {report.supervisor_name}
-                            </span>
-                          )}
-                          {report.university_name && (
-                            <span className={`flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
-                              <User size={16} className="text-sky-600 dark:text-sky-400" />
-                              <strong className="font-semibold">الجامعة:</strong> {report.university_name}
-                            </span>
-                          )}
-                          {report.score !== null && report.score !== undefined && (
-                            <span className={`flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
-                              <FileText size={16} className="text-sky-600 dark:text-sky-400" />
-                              <strong className="font-semibold">النتيجة:</strong> {report.score}/100
-                            </span>
-                          )}
-                          <span className={`flex items-center gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
-                            <Calendar size={16} className="text-sky-600 dark:text-sky-400" />
-                            <strong className="font-semibold">{t("Reports.date")}:</strong> {formatDate(report.created_at)}
-                          </span>
-                        </div>
-                        {report.file_url && (
-                          <div className="mt-3">
+                          </div>
+                          {report.file_url && (
                             <a
                               href={report.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`inline-flex items-center gap-2 text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors ${isRtl ? "flex-row-reverse" : ""}`}
+                              className={`mt-2 inline-flex items-center gap-2 text-caption font-medium text-primary hover:underline ${isRtl ? "flex-row-reverse" : ""}`}
                             >
-                              <Download size={16} />
+                              <Download size={14} />
                               {t("Reports.download")}
                             </a>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
 
-                      <div className={`flex gap-2 ${isRtl ? "flex-row-reverse sm:flex-col-reverse" : "sm:flex-col"}`}>
-                        <button
-                          onClick={() => handleViewDetails(report.id)}
-                          className={`px-4 py-2 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-all duration-200 text-sm flex items-center gap-1.5 font-medium shadow-sm hover:shadow-md ${isRtl ? "flex-row-reverse" : ""}`}
-                        >
-                          <Eye size={16} />
-                          {t("Reports.viewDetails")}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(report.id)}
-                          className={`px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 text-sm flex items-center gap-1.5 font-medium shadow-sm hover:shadow-md ${isRtl ? "flex-row-reverse" : ""}`}
-                        >
-                          <Trash2 size={16} />
-                          {t("Reports.delete")}
-                        </button>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleViewDetails(report.id)}
+                          >
+                            <Eye size={16} />
+                            {t("Reports.viewDetails")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDelete(report.id)}
+                            className="text-danger hover:bg-danger/10"
+                          >
+                            <Trash2 size={16} />
+                            {t("Reports.delete")}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
+                    </Card>
                   </motion.div>
                 ))
               )}
@@ -568,98 +575,88 @@ function ReportsContent() {
 
           {/* Details Modal */}
           {showDetails && selectedReport && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-              <div className="bg-white dark:bg-dark-light rounded-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700 shadow-xl">
-                <div className={`flex justify-between items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse" : ""}`}>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+              <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
+                <div className={`mb-6 flex items-center justify-between border-b border-border pb-4 ${isRtl ? "flex-row-reverse" : ""}`}>
+                  <h2 className="text-h3 text-text">
                     {t("Reports.detailsTitle")}
                   </h2>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 px-0"
                     onClick={handleCloseDetails}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     aria-label="Close"
                   >
-                    <X size={20} className="text-slate-600 dark:text-slate-400" />
-                  </button>
+                    <X size={18} />
+                  </Button>
                 </div>
                 {loadingSelected ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <FileText className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Reports.titleLabel")}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">{selectedReport.title || "-"}</p>
+                        <FileText className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-1 text-caption font-semibold text-muted">{t("Reports.titleLabel")}</p>
+                          <p className="font-medium text-text">{selectedReport.title || "-"}</p>
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Reports.typeLabel")}</p>
+                        <p className="mb-2 text-caption font-semibold text-muted">{t("Reports.typeLabel")}</p>
                         <div>{getReportTypeBadge(selectedReport.report_type)}</div>
                       </div>
                       {selectedReport.student_name && (
                         <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          <User className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Reports.student")}</p>
-                            <p className="font-bold text-slate-900 dark:text-white">{selectedReport.student_name}</p>
+                          <User className="mt-1 shrink-0 text-primary" size={18} />
+                          <div className="min-w-0 flex-1">
+                            <p className="mb-1 text-caption font-semibold text-muted">{t("Reports.student")}</p>
+                            <p className="font-medium text-text">{selectedReport.student_name}</p>
                           </div>
                         </div>
                       )}
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <Calendar className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Reports.date")}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">{formatDate(selectedReport.created_at)}</p>
+                        <Calendar className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-1 text-caption font-semibold text-muted">{t("Reports.date")}</p>
+                          <p className="font-medium text-text tabular-nums">{formatDate(selectedReport.created_at)}</p>
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Reports.status")}</p>
+                        <p className="mb-2 text-caption font-semibold text-muted">{t("Reports.status")}</p>
                         {selectedReport.status ? (
-                          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                            selectedReport.status === "draft" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                            selectedReport.status === "submitted" ? "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400" :
-                            selectedReport.status === "approved" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                            selectedReport.status === "rejected" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
-                            selectedReport.status === "locked" ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" :
-                            "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
-                          }`}>
-                            {selectedReport.status === "draft" ? "مسودة" :
-                             selectedReport.status === "submitted" ? "مقدمة" :
-                             selectedReport.status === "approved" ? "موافق عليها" :
-                             selectedReport.status === "rejected" ? "مرفوضة" :
-                             selectedReport.status === "locked" ? "مقفلة" :
-                             selectedReport.status}
-                          </span>
+                          getStatusBadge(selectedReport.status)
                         ) : (
-                          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${selectedReport.is_active ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"}`}>
+                          <Badge variant={selectedReport.is_active ? "success" : "default"}>
                             {selectedReport.is_active ? t("Reports.active") : t("Reports.inactive")}
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     </div>
                     {selectedReport.description && (
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <FileText className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Reports.description")}</p>
-                          <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 p-4 rounded-lg leading-relaxed">{selectedReport.description}</p>
+                        <FileText className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-2 text-caption font-semibold text-muted">{t("Reports.description")}</p>
+                          <p className="rounded-md border border-border bg-background p-4 text-body-sm text-text">
+                            {selectedReport.description}
+                          </p>
                         </div>
                       </div>
                     )}
                     {selectedReport.file_url && (
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <Download className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Reports.fileUrl")}</p>
+                        <Download className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-2 text-caption font-semibold text-muted">{t("Reports.fileUrl")}</p>
                           <a
                             href={selectedReport.file_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 break-all font-medium transition-colors"
+                            className="break-all font-medium text-primary hover:underline"
                           >
                             {selectedReport.file_url}
                           </a>
@@ -676,5 +673,3 @@ function ReportsContent() {
     </AnimatedWrapper>
   );
 }
-
-

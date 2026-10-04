@@ -1,32 +1,32 @@
 "use client";
+
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 export default function PageLoader({ loading, hasSidebar }) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const isRtl = i18n.language === "ar";
   const [isMobile, setIsMobile] = useState(false);
 
-  // ✅ نتحقق من حجم الشاشة
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 1024); // أقل من 1024 يعتبر موبايل أو تابلت
+      setIsMobile(window.innerWidth <= 1024);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ نحسب موضع اللودر بالنسبة للـ Sidebar باستخدام فئات Tailwind فقط
-  // على الشاشات الكبيرة: إذا كان هناك Sidebar لا نغطيه (نترك 18rem = 72)
   const sidebarOffsetClass =
     hasSidebar && !isMobile
       ? isRtl
-        ? "lg:right-64" // RTL: السايدبار يمين → نترك مسافة من اليمين (16rem = w-64)
-        : "lg:left-64" // LTR: السايدبار يسار → نترك مسافة من اليسار (16rem = w-64)
+        ? "lg:right-64"
+        : "lg:left-64"
       : "";
+
+  const loadingLabel = isRtl ? "جارٍ التحضير..." : "Preparing...";
 
   return (
     <AnimatePresence>
@@ -34,53 +34,75 @@ export default function PageLoader({ loading, hasSidebar }) {
         <motion.div
           key="loader"
           dir={isRtl ? "rtl" : "ltr"}
-          className={`fixed inset-y-0 left-0 right-0 flex flex-col items-center justify-center
-                     z-[9999] bg-gradient-to-br 
-                     from-blue-900/45 dark:from-slate-900/90 
-                     via-blue-700/40 dark:via-slate-800/80 
-                     to-indigo-900/45 dark:to-slate-900/90 
-                     backdrop-blur-[6px] dark:backdrop-blur-[8px]
-                     ${sidebarOffsetClass}`}
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          aria-label={loadingLabel}
+          className={`fixed inset-y-0 left-0 right-0 z-[9999] flex items-center justify-center bg-background ${sidebarOffsetClass}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          {/* أيقونة التحميل */}
-          <motion.div
-            className="flex items-center justify-center mb-4"
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
-          >
-            <Loader2 className="w-10 h-10 sm:w-14 sm:h-14 text-white drop-shadow-lg" />
-          </motion.div>
+          <div className="flex w-full max-w-[280px] flex-col items-center px-6 sm:max-w-[320px]">
+            <motion.div
+              className="mb-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface shadow-sm sm:mb-6 sm:h-20 sm:w-20"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
+              <Image
+                src="/Screenshot_٢٠٢٥٠٩٠٨-١٢٣٢٥٥.jpg"
+                alt={t("Navbar.logoAlt") || "MediSmile Logo"}
+                width={80}
+                height={80}
+                className="h-full w-full object-cover"
+                priority
+              />
+            </motion.div>
 
-          {/* نص التحميل */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.05,
-              duration: 0.2,
-            }}
-            className="text-white text-2xl sm:text-3xl font-extrabold tracking-widest text-center drop-shadow-md"
-          >
-            {isRtl ? "جارٍ التحميل..." : "Loading..."}
-          </motion.div>
+            <motion.p
+              className="mb-1 font-sans text-h3 text-text"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.05, ease: "easeOut" }}
+            >
+              MediSmile
+            </motion.p>
 
-          {/* نبض خفيف تحت النص */}
-          <motion.div
-            className="mt-4 w-8 h-8 rounded-full bg-white/30 dark:bg-white/20"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 1.2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
+            <motion.p
+              className="mb-6 font-sans text-body-sm text-muted"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+            >
+              {loadingLabel}
+            </motion.p>
+
+            <motion.div
+              className="flex items-center gap-1.5"
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.25, delay: 0.15 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  className="h-1.5 w-1.5 rounded-full bg-primary"
+                  animate={{ opacity: [0.35, 1, 0.35], scale: [0.9, 1, 0.9] }}
+                  transition={{
+                    duration: 1.1,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.18,
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            <span className="sr-only">{loadingLabel}</span>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

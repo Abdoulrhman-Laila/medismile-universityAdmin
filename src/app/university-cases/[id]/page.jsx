@@ -8,6 +8,7 @@ import { useRtl } from "@/hooks/useRtl";
 import { useDispatch } from "react-redux";
 import RoleGuard from "@/components/RoleGuard";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import { Button, Badge, Card, CardTitle } from "@/components/ui";
 import { fetchCaseById, fetchCaseHistory, fetchCaseSessions } from "@/services/casesApi";
 import { fetchSupervisors } from "@/services/supervisorsApi";
 import { 
@@ -165,37 +166,29 @@ function CaseDetailsContent() {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      new: { label: "جديدة", color: "bg-blue-500" },
-      accepted: { label: "مقبولة", color: "bg-green-500" },
-      rejected: { label: "مرفوضة", color: "bg-red-500" },
-      needs_assignment_approval: { label: "تحتاج موافقة إسناد", color: "bg-yellow-500" },
-      assigned: { label: "مسندة", color: "bg-purple-500" },
-      in_progress: { label: "قيد التنفيذ", color: "bg-indigo-500" },
-      completed: { label: "مكتملة", color: "bg-emerald-500" },
-      closed: { label: "مغلقة", color: "bg-gray-500" },
+      new: { label: "جديدة", variant: "info" },
+      accepted: { label: "مقبولة", variant: "success" },
+      rejected: { label: "مرفوضة", variant: "danger" },
+      needs_assignment_approval: { label: "تحتاج موافقة إسناد", variant: "warning" },
+      assigned: { label: "مسندة", variant: "primary" },
+      in_progress: { label: "قيد التنفيذ", variant: "info" },
+      completed: { label: "مكتملة", variant: "success" },
+      closed: { label: "مغلقة", variant: "default" },
     };
-    const statusInfo = statusMap[status] || { label: status, color: "bg-gray-500" };
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${statusInfo.color}`}>
-        {statusInfo.label}
-      </span>
-    );
+    const statusInfo = statusMap[status] || { label: status, variant: "default" };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
 
   const getPriorityBadge = (priority) => {
     const priorityMap = {
-      low: { label: "منخفضة", color: "bg-green-500" },
-      medium: { label: "متوسطة", color: "bg-yellow-500" },
-      high: { label: "عالية", color: "bg-orange-500" },
-      urgent: { label: "عاجلة", color: "bg-red-500" },
+      low: { label: "منخفضة", variant: "success" },
+      medium: { label: "متوسطة", variant: "warning" },
+      high: { label: "عالية", variant: "warning" },
+      urgent: { label: "عاجلة", variant: "danger" },
     };
-    const priorityInfo = priorityMap[priority] || { label: priority, color: "bg-gray-500" };
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${priorityInfo.color}`}>
-        {priorityInfo.label}
-      </span>
-    );
+    const priorityInfo = priorityMap[priority] || { label: priority, variant: "default" };
+    return <Badge variant={priorityInfo.variant}>{priorityInfo.label}</Badge>;
   };
 
   const getUserName = (user) => {
@@ -214,8 +207,8 @@ function CaseDetailsContent() {
     return (
       <AnimatedWrapper>
         <div className={`p-6 ${isRtl ? "text-right" : "text-left"}`}>
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="animate-spin text-sky-500" size={32} />
+          <div className="flex items-center justify-center py-14">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
           </div>
         </div>
       </AnimatedWrapper>
@@ -225,19 +218,12 @@ function CaseDetailsContent() {
   if (error) {
     return (
       <AnimatedWrapper>
-        <div className={`p-6 ${isRtl ? "text-right" : "text-left"}`}>
-          <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500/50 rounded-xl p-4 text-red-700 dark:text-red-400">
-            <div className="flex items-center gap-2">
-              <AlertCircle size={20} />
-              <span>{error}</span>
-            </div>
+        <div className={`space-y-4 p-6 ${isRtl ? "text-right" : "text-left"}`}>
+          <div className="flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-body-sm text-danger">
+            <AlertCircle size={20} />
+            <span>{error}</span>
           </div>
-          <button
-            onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
-          >
-            العودة
-          </button>
+          <Button onClick={() => router.back()}>العودة</Button>
         </div>
       </AnimatedWrapper>
     );
@@ -246,85 +232,79 @@ function CaseDetailsContent() {
   if (!caseData) {
     return (
       <AnimatedWrapper>
-        <div className={`p-6 ${isRtl ? "text-right" : "text-left"}`}>
-          <p className="text-slate-500 dark:text-slate-400">الحالة غير موجودة</p>
-          <button
-            onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
-          >
-            العودة
-          </button>
+        <div className={`space-y-4 p-6 ${isRtl ? "text-right" : "text-left"}`}>
+          <p className="text-body-sm text-muted">الحالة غير موجودة</p>
+          <Button onClick={() => router.back()}>العودة</Button>
         </div>
       </AnimatedWrapper>
     );
   }
 
+  const selectClass =
+    "h-10 w-full rounded-md border border-border bg-surface px-3 text-body-sm text-text " +
+    "focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25";
+
   return (
     <AnimatedWrapper>
-      <div className={`p-6 space-y-6 ${isRtl ? "text-right" : "text-left"}`}>
+      <div className={`space-y-6 p-6 ${isRtl ? "text-right" : "text-left"}`}>
         {/* Back Button */}
-        <button
+        <Button
+          variant="ghost"
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors"
+          className={`px-0 text-primary hover:bg-transparent hover:text-primary-hover ${isRtl ? "flex-row-reverse" : ""}`}
         >
-          <ArrowLeft size={20} />
-          <span>العودة</span>
-        </button>
+          <ArrowLeft size={18} />
+          العودة
+        </Button>
 
         {/* Header */}
-        <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                {caseData.title || "بدون عنوان"}
-              </h1>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {getStatusBadge(caseData.status)}
-                {getPriorityBadge(caseData.priority)}
-                {caseData.is_public && (
-                  <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                    عامة
-                  </span>
-                )}
-              </div>
-            </div>
+        <Card>
+          <h1 className="mb-3 text-h1 text-text">
+            {caseData.title || "بدون عنوان"}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {getStatusBadge(caseData.status)}
+            {getPriorityBadge(caseData.priority)}
+            {caseData.is_public && <Badge variant="info">عامة</Badge>}
           </div>
-        </div>
+        </Card>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
           {/* Left Column - Main Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-5 lg:col-span-2 lg:space-y-6">
             {/* Description */}
-            <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                <FileText size={20} />
+            <Card>
+              <CardTitle className="mb-4 flex items-center gap-2">
+                <FileText size={18} className="text-primary" />
                 الوصف
-              </h2>
-              <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+              </CardTitle>
+              <p className="whitespace-pre-wrap text-body-sm text-text-secondary">
                 {caseData.description || "لا يوجد وصف"}
               </p>
-            </div>
+            </Card>
 
             {/* History */}
             {(caseHistory.length > 0 || (caseData.history && caseData.history.length > 0)) && (
-              <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                  <Clock size={20} />
+              <Card>
+                <CardTitle className="mb-4 flex items-center gap-2">
+                  <Clock size={18} className="text-primary" />
                   سجل الحالة
-                  {loadingHistory && <Loader2 className="animate-spin ml-2" size={16} />}
-                </h2>
+                  {loadingHistory && (
+                    <Loader2 className="ms-1 h-4 w-4 animate-spin text-primary" size={16} />
+                  )}
+                </CardTitle>
                 <div className="space-y-3">
                   {(caseHistory.length > 0 ? caseHistory : (caseData.history || [])).map((entry, idx) => (
                     <div
                       key={entry.id || idx}
-                      className="border-l-4 border-sky-500 pl-4 py-2"
+                      className={`border-primary py-2 ${isRtl ? "border-r-4 pr-4" : "border-l-4 pl-4"}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-slate-900 dark:text-white">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium text-text">
                           {entry.description || entry.action || "إجراء"}
                         </p>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                        <span className="shrink-0 text-caption text-muted tabular-nums">
                           {entry.created_at
                             ? new Date(entry.created_at).toLocaleDateString("ar-SA", {
                                 year: "numeric",
@@ -337,203 +317,210 @@ function CaseDetailsContent() {
                         </span>
                       </div>
                       {entry.performed_by && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        <p className="mt-1 text-caption text-text-secondary">
                           بواسطة: {getUserName(entry.performed_by)}
                         </p>
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
 
           </div>
 
           {/* Right Column - Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5 lg:space-y-6">
             {/* Patient Info */}
-            <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                <User size={20} />
+            <Card>
+              <CardTitle className="mb-4 flex items-center gap-2">
+                <User size={18} className="text-primary" />
                 معلومات المريض
-              </h2>
-              <div className="space-y-2">
-                <p className="text-slate-700 dark:text-slate-300">
-                  <span className="font-medium">الاسم:</span> {getUserName(caseData.patient)}
+              </CardTitle>
+              <div className="space-y-2 text-body-sm text-text-secondary">
+                <p>
+                  <span className="font-medium text-text">الاسم:</span> {getUserName(caseData.patient)}
                 </p>
                 {caseData.patient?.email && (
-                  <p className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium">البريد:</span> {caseData.patient.email}
+                  <p>
+                    <span className="font-medium text-text">البريد:</span> {caseData.patient.email}
                   </p>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Student Info */}
             {caseData.student && (
-              <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">
-                  الطالب المسند
-                </h2>
-                <div className="space-y-2">
-                  <p className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium">الاسم:</span> {getUserName(caseData.student)}
+              <Card>
+                <CardTitle className="mb-4">الطالب المسند</CardTitle>
+                <div className="space-y-2 text-body-sm text-text-secondary">
+                  <p>
+                    <span className="font-medium text-text">الاسم:</span> {getUserName(caseData.student)}
                   </p>
                   {caseData.student?.email && (
-                    <p className="text-slate-700 dark:text-slate-300">
-                      <span className="font-medium">البريد:</span> {caseData.student.email}
+                    <p>
+                      <span className="font-medium text-text">البريد:</span> {caseData.student.email}
                     </p>
                   )}
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Supervisor Info */}
-            <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                  المشرف
-                </h2>
+            <Card>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <CardTitle className="m-0">المشرف</CardTitle>
                 {!caseData.supervisor && (
-                  <button
+                  <Button
+                    size="sm"
                     onClick={() => setShowAssignModal(true)}
-                    className="px-3 py-1.5 bg-sky-600 text-white text-sm rounded-lg hover:bg-sky-700 transition-colors flex items-center gap-2"
                     disabled={assigningSupervisor || loadingSupervisors}
                   >
                     <UserPlus size={16} />
-                    <span>تعيين مشرف</span>
-                  </button>
+                    تعيين مشرف
+                  </Button>
                 )}
               </div>
               {caseData.supervisor ? (
-                <div className="space-y-2">
-                  <p className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium">الاسم:</span> {getUserName(caseData.supervisor)}
+                <div className="space-y-2 text-body-sm text-text-secondary">
+                  <p>
+                    <span className="font-medium text-text">الاسم:</span> {getUserName(caseData.supervisor)}
                   </p>
                   {caseData.supervisor?.email && (
-                    <p className="text-slate-700 dark:text-slate-300">
-                      <span className="font-medium">البريد:</span> {caseData.supervisor.email}
+                    <p>
+                      <span className="font-medium text-text">البريد:</span> {caseData.supervisor.email}
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                <p className="text-body-sm text-muted">
                   لم يتم تعيين مشرف بعد
                 </p>
               )}
-            </div>
+            </Card>
 
             {/* Dates */}
-            <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar size={20} />
+            <Card>
+              <CardTitle className="mb-4 flex items-center gap-2">
+                <Calendar size={18} className="text-primary" />
                 التواريخ
-              </h2>
-              <div className="space-y-2">
+              </CardTitle>
+              <div className="space-y-3 text-body-sm text-text-secondary">
                 {caseData.created_at && (
-                  <p className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium">تاريخ الإنشاء:</span>
+                  <p>
+                    <span className="font-medium text-text">تاريخ الإنشاء:</span>
                     <br />
-                    {new Date(caseData.created_at).toLocaleDateString("ar-SA", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    <span className="tabular-nums">
+                      {new Date(caseData.created_at).toLocaleDateString("ar-SA", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </p>
                 )}
                 {caseData.updated_at && (
-                  <p className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium">آخر تحديث:</span>
+                  <p>
+                    <span className="font-medium text-text">آخر تحديث:</span>
                     <br />
-                    {new Date(caseData.updated_at).toLocaleDateString("ar-SA", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    <span className="tabular-nums">
+                      {new Date(caseData.updated_at).toLocaleDateString("ar-SA", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </p>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Assignment Requests */}
             {caseData.assignment_requests && caseData.assignment_requests.length > 0 && (
-              <div className="bg-white dark:bg-dark-light rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">
+              <Card>
+                <CardTitle className="mb-4">
                   طلبات الإسناد ({caseData.assignment_requests.length})
-                </h2>
+                </CardTitle>
                 <div className="space-y-3">
                   {caseData.assignment_requests.map((request, idx) => (
                     <div
                       key={request.id || idx}
-                      className="border border-slate-200 dark:border-slate-700 rounded-lg p-3"
+                      className="rounded-md border border-border p-3"
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="text-body-sm font-medium text-text">
                           {getUserName(request.student)}
                         </span>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          request.status === "accepted" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                          request.status === "rejected" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
-                          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                        }`}>
-                          {request.status === "accepted" ? "مقبول" :
-                           request.status === "rejected" ? "مرفوض" :
-                           "في الانتظار"}
-                        </span>
+                        <Badge
+                          variant={
+                            request.status === "accepted"
+                              ? "success"
+                              : request.status === "rejected"
+                                ? "danger"
+                                : "warning"
+                          }
+                        >
+                          {request.status === "accepted"
+                            ? "مقبول"
+                            : request.status === "rejected"
+                              ? "مرفوض"
+                              : "في الانتظار"}
+                        </Badge>
                       </div>
                       {request.message && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        <p className="mt-1 text-caption text-text-secondary">
                           {request.message}
                         </p>
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         </div>
 
         {/* Modal تعيين المشرف */}
         {showAssignModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-dark-light rounded-xl p-6 max-w-md w-full shadow-xl">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  تعيين مشرف للحالة
-                </h2>
-                <button
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-xl">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-h3 text-text">تعيين مشرف للحالة</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 px-0"
                   onClick={() => {
                     setShowAssignModal(false);
                     setSelectedSupervisorId("");
                   }}
-                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Close"
                 >
-                  <X size={20} className="text-slate-600 dark:text-slate-400" />
-                </button>
+                  <X size={18} />
+                </Button>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div className="mb-5">
+                <label className="mb-2 block text-label text-text">
                   اختر المشرف
                 </label>
                 {loadingSupervisors ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={24} />
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" size={24} />
                   </div>
                 ) : supervisors.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-body-sm text-muted">
                     لا توجد مشرفين متاحين
                   </p>
                 ) : (
                   <select
                     value={selectedSupervisorId}
                     onChange={(e) => setSelectedSupervisorId(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className={selectClass}
                   >
                     <option value="">-- اختر مشرف --</option>
                     {supervisors.map((supervisor) => {
@@ -570,30 +557,23 @@ function CaseDetailsContent() {
                 )}
               </div>
 
-              <div className="flex gap-3 justify-end">
-                <button
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowAssignModal(false);
                     setSelectedSupervisorId("");
                   }}
-                  className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   إلغاء
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleAssignSupervisor}
                   disabled={!selectedSupervisorId || assigningSupervisor}
-                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  loading={assigningSupervisor}
                 >
-                  {assigningSupervisor ? (
-                    <>
-                      <Loader2 className="animate-spin" size={18} />
-                      <span>جاري التعيين...</span>
-                    </>
-                  ) : (
-                    <span>تعيين</span>
-                  )}
-                </button>
+                  تعيين
+                </Button>
               </div>
             </div>
           </div>

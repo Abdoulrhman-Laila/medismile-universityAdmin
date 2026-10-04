@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Search, Filter, Eye, X, Calendar, Clock, User, FileText, MapPin, MessageSquare } from "lucide-react";
+import { Loader2, Search, X, Calendar, Clock, User, FileText, MapPin, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRtl } from "@/hooks/useRtl";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,10 +9,30 @@ import { motion } from "framer-motion";
 import { fetchAppointmentsAsync, fetchAppointmentByIdAsync, clearSelectedAppointment } from "../../redux/features/appointments/appointmentsSlice";
 import RoleGuard from "@/components/RoleGuard";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import {
+  Button,
+  Input,
+  Badge,
+  Card,
+  DataTable,
+  DataTableHead,
+  DataTableTh,
+  DataTableBody,
+  DataTableRow,
+  DataTableTd,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import toast from "react-hot-toast";
 
+const selectClass =
+  "h-10 w-full rounded-md border border-border bg-surface px-3 text-body-sm text-text " +
+  "focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25";
+
+const labelClass = "mb-1.5 block text-caption font-semibold text-muted";
+
 function UniversityAppointmentsContent() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const isRtl = useRtl();
   const dispatch = useDispatch();
   const { appointments, selectedAppointment, loading, loadingSelected, error } = useSelector((state) => state.appointments);
@@ -57,18 +77,14 @@ function UniversityAppointmentsContent() {
   // Helper function لتنسيق حالة الموعد
   const getStatusBadge = (status) => {
     const statusMap = {
-      scheduled: { label: "مجدول", color: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400" },
-      rescheduled: { label: "أعيد جدولته", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
-      completed: { label: "مكتمل", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
-      cancelled: { label: "ملغي", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" },
-      no_show: { label: "عدم الحضور", color: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" },
+      scheduled: { label: "مجدول", variant: "info" },
+      rescheduled: { label: "أعيد جدولته", variant: "warning" },
+      completed: { label: "مكتمل", variant: "success" },
+      cancelled: { label: "ملغي", variant: "danger" },
+      no_show: { label: "عدم الحضور", variant: "warning" },
     };
-    const statusInfo = statusMap[status] || { label: status, color: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300" };
-    return (
-      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${statusInfo.color}`}>
-        {statusInfo.label}
-      </span>
-    );
+    const statusInfo = statusMap[status] || { label: status, variant: "default" };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
   // فلترة المواعيد
@@ -119,58 +135,64 @@ function UniversityAppointmentsContent() {
 
   if (!mounted)
     return (
-      <div className="p-4 sm:p-6 min-h-screen bg-sky-50 dark:bg-slate-900"></div>
+      <div className="min-h-screen bg-background p-4 sm:p-6"></div>
     );
+
+  const emptyLabel = t("Appointments.noAppointments") || "لا توجد مواعيد";
 
   return (
     <AnimatedWrapper>
       <div
-        className={`p-6 sm:p-8 min-h-screen ${
+        className={`min-h-screen p-6 sm:p-8 ${
           isRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto">
+        <div className="mx-auto max-w-[1400px] space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                {t("Appointments.title") || "مواعيد الجامعة"}
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-                {filteredAppointments.length} {t("Appointments.noAppointments") ? "موعد" : "مواعيد"}
-              </p>
-            </div>
+          <div className="space-y-1">
+            <h1 className="text-h1 text-text">
+              {t("Appointments.title") || "مواعيد الجامعة"}
+            </h1>
+            <p className="text-body-sm text-text-secondary">
+              {filteredAppointments.length} موعد
+            </p>
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-light rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className={`flex flex-wrap gap-4 items-end ${isRtl ? "flex-row-reverse" : ""}`}>
+          <Card padding className="!p-4 sm:!p-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 xl:items-end">
               {/* Search */}
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div className="sm:col-span-2 xl:col-span-2">
+                <label className={labelClass}>
                   {t("actions.search") || "بحث"}
                 </label>
                 <div className="relative">
-                  <Search className={`absolute top-1/2 transform -translate-y-1/2 text-slate-400 ${isRtl ? "right-3" : "left-3"}`} size={18} />
-                  <input
+                  <Search
+                    className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted ${
+                      isRtl ? "right-3" : "left-3"
+                    }`}
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
                     type="text"
                     placeholder={t("Appointments.searchPlaceholder") || "ابحث عن موعد..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full ${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200`}
+                    className={isRtl ? "pr-10" : "pl-10"}
                   />
                 </div>
               </div>
 
               {/* Status Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div>
+                <label className={labelClass}>
                   {t("Appointments.status") || "الحالة"}
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all") || "الكل"}</option>
                   <option value="scheduled">{t("Appointments.statuses.scheduled") || "مجدول"}</option>
@@ -182,40 +204,32 @@ function UniversityAppointmentsContent() {
               </div>
 
               {/* Date From Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  من تاريخ
-                </label>
-                <input
+              <div>
+                <label className={labelClass}>من تاريخ</label>
+                <Input
                   type="date"
                   value={dateFromFilter}
                   onChange={(e) => setDateFromFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
                 />
               </div>
 
               {/* Date To Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  إلى تاريخ
-                </label>
-                <input
+              <div>
+                <label className={labelClass}>إلى تاريخ</label>
+                <Input
                   type="date"
                   value={dateToFilter}
                   onChange={(e) => setDateToFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
                 />
               </div>
 
               {/* Participant Filter */}
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  المشارك
-                </label>
+              <div>
+                <label className={labelClass}>المشارك</label>
                 <select
                   value={participantFilter}
                   onChange={(e) => setParticipantFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">الكل</option>
                   <option value="patient">مريض</option>
@@ -225,8 +239,9 @@ function UniversityAppointmentsContent() {
               </div>
 
               {/* Reset Filters */}
-              <div>
-                <button
+              <div className="sm:col-span-2 xl:col-span-6">
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setSearchTerm("");
                     setStatusFilter("all");
@@ -234,106 +249,78 @@ function UniversityAppointmentsContent() {
                     setDateToFilter("");
                     setParticipantFilter("all");
                   }}
-                  className="px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-sm"
                 >
                   إعادة تعيين
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Error */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
+            <div className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-body-sm text-danger">
               {error}
             </div>
           )}
 
           {/* Loading */}
-          {loading && appointments.length === 0 && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
-            </div>
-          )}
+          {loading && appointments.length === 0 && <DataTableLoading />}
 
-          {/* Table - نفس ستايل جداول المشرفين والطلاب */}
+          {/* Table */}
           {!loading && (
-            <div className="overflow-x-auto rounded-2xl border-2 border-sky-200/50 dark:border-dark-lighter shadow-2xl">
-              <table
-                className={`w-full text-sm text-slate-900 dark:text-slate-200 min-w-[1000px] ${
-                  isRtl ? "text-right" : "text-left"
-                }`}
-                dir={isRtl ? "rtl" : "ltr"}
-              >
-                <thead className="bg-gradient-to-r from-sky-700 via-sky-600 to-sky-700 dark:from-dark-lighter dark:via-dark-light dark:to-dark-lighter text-white">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.patient") || "المريض"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.student") || "الطالب"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.supervisor") || "المشرف"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.case") || "الحالة المرتبطة"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.date") || "التاريخ والوقت"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.location") || "الموقع"}</th>
-                    <th className="px-6 py-4 font-semibold">{t("Appointments.status") || "الحالة"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAppointments && filteredAppointments.length > 0 ? (
-                    filteredAppointments.map((apt, idx) => {
+            <div className="hidden sm:block">
+              {filteredAppointments && filteredAppointments.length > 0 ? (
+                <DataTable dir={isRtl ? "rtl" : "ltr"} minWidth="1000px">
+                  <DataTableHead>
+                    <tr>
+                      <DataTableTh>{t("Appointments.patient") || "المريض"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.student") || "الطالب"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.supervisor") || "المشرف"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.case") || "الحالة المرتبطة"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.date") || "التاريخ والوقت"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.location") || "الموقع"}</DataTableTh>
+                      <DataTableTh>{t("Appointments.status") || "الحالة"}</DataTableTh>
+                    </tr>
+                  </DataTableHead>
+                  <DataTableBody>
+                    {filteredAppointments.map((apt, idx) => {
                       const patientEmail = apt.patient?.email || null;
                       const studentEmail = apt.student?.email || null;
                       const supervisorEmail = apt.supervisor?.email || null;
-
                       const dateValue = apt.appointment_date || apt.start_datetime || apt.scheduled_at;
 
                       return (
-                        <motion.tr
+                        <DataTableRow
+                          as={motion.tr}
                           key={apt.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2, delay: idx * 0.02 }}
-                          className={`${
-                            idx % 2 === 0
-                              ? "bg-sky-50/50 dark:bg-dark-light/30"
-                              : "bg-white dark:bg-dark-light"
-                          } border-b border-sky-200/50 dark:border-dark-lighter hover:bg-gradient-to-r hover:from-sky-100/50 hover:to-sky-200/50 dark:hover:from-dark-lighter transition-all duration-300`}
+                          transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.24) }}
+                          className="cursor-pointer"
+                          onClick={() => handleViewDetails(apt.id)}
                         >
-                          {/* المريض */}
-                          <td className="px-6 py-4">
-                            <div className="font-semibold">{apt.patient_name || "-"}</div>
+                          <DataTableTd>
+                            <div className="font-medium text-text">{apt.patient_name || "-"}</div>
                             {patientEmail && (
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                {patientEmail}
-                              </div>
+                              <div className="mt-0.5 text-caption text-muted">{patientEmail}</div>
                             )}
-                          </td>
-
-                          {/* الطالب */}
-                          <td className="px-6 py-4">
-                            <div className="font-semibold">{apt.student_name || "-"}</div>
+                          </DataTableTd>
+                          <DataTableTd>
+                            <div className="font-medium text-text">{apt.student_name || "-"}</div>
                             {studentEmail && (
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                {studentEmail}
-                              </div>
+                              <div className="mt-0.5 text-caption text-muted">{studentEmail}</div>
                             )}
-                          </td>
-
-                          {/* المشرف */}
-                          <td className="px-6 py-4">
-                            <div className="font-semibold">{apt.supervisor_name || "-"}</div>
+                          </DataTableTd>
+                          <DataTableTd>
+                            <div className="font-medium text-text">{apt.supervisor_name || "-"}</div>
                             {supervisorEmail && (
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                {supervisorEmail}
-                              </div>
+                              <div className="mt-0.5 text-caption text-muted">{supervisorEmail}</div>
                             )}
-                          </td>
-
-                          {/* الحالة المرتبطة */}
-                          <td className="px-6 py-4">
-                            <div className="font-semibold">{apt.case_title || "-"}</div>
-                          </td>
-
-                          {/* التاريخ والوقت */}
-                          <td className="px-6 py-4">
+                          </DataTableTd>
+                          <DataTableTd className="text-text-secondary">
+                            {apt.case_title || "-"}
+                          </DataTableTd>
+                          <DataTableTd className="text-text-secondary tabular-nums whitespace-nowrap">
                             {dateValue
                               ? new Date(dateValue).toLocaleString("ar-SA", {
                                   year: "numeric",
@@ -343,183 +330,179 @@ function UniversityAppointmentsContent() {
                                   minute: "2-digit",
                                 })
                               : "-"}
-                          </td>
-
-                          {/* الموقع */}
-                          <td className="px-6 py-4">
+                          </DataTableTd>
+                          <DataTableTd className="text-text-secondary">
                             {apt.location || "-"}
-                          </td>
-
-                          {/* الحالة */}
-                          <td className="px-6 py-4">
-                            {getStatusBadge(apt.status)}
-                          </td>
-                        </motion.tr>
+                          </DataTableTd>
+                          <DataTableTd>{getStatusBadge(apt.status)}</DataTableTd>
+                        </DataTableRow>
                       );
-                    })
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="text-center py-12 text-slate-500 dark:text-slate-400"
-                      >
-                        {t("Appointments.noAppointments") || "لا توجد مواعيد"}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    })}
+                  </DataTableBody>
+                </DataTable>
+              ) : (
+                <DataTableEmpty>{emptyLabel}</DataTableEmpty>
+              )}
             </div>
           )}
 
-          {/* Mobile Cards (بدون زر عرض التفاصيل لمدير الجامعة) */}
+          {/* Mobile Cards */}
           {!loading && (
-            <div className="sm:hidden grid gap-4 mt-6">
+            <div className="grid gap-3 sm:hidden">
               {filteredAppointments && filteredAppointments.length > 0 ? (
                 filteredAppointments.map((apt) => (
                   <motion.div
                     key={apt.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-dark-light rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700"
                   >
-                    <h3 className="font-bold text-lg mb-3 text-slate-900 dark:text-white">
-                      موعد - {apt.patient_name || "-"}
-                    </h3>
-                    <div className="space-y-2 mb-4">
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-semibold">الطالب:</span> {apt.student_name || "-"}
-                      </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-semibold">المشرف:</span> {apt.supervisor_name || "-"}
-                      </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-semibold">الحالة:</span> {apt.case_title || "-"}
-                      </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-semibold">التاريخ:</span>{" "}
-                        {apt.appointment_date || apt.start_datetime
-                          ? new Date(apt.appointment_date || apt.start_datetime).toLocaleDateString("ar-SA")
-                          : "-"}
-                      </p>
-                    </div>
-                    <div className="mb-2">{getStatusBadge(apt.status)}</div>
-                    {apt.location && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-semibold">الموقع:</span> {apt.location}
-                      </p>
-                    )}
+                    <Card
+                      className="!p-4 cursor-pointer transition-colors hover:bg-primary-muted/30"
+                      onClick={() => handleViewDetails(apt.id)}
+                    >
+                      <h3 className="mb-3 text-h3 text-text">
+                        موعد - {apt.patient_name || "-"}
+                      </h3>
+                      <div className="mb-3 space-y-1.5 text-body-sm text-text-secondary">
+                        <p>
+                          <span className="font-medium text-text">الطالب:</span> {apt.student_name || "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-text">المشرف:</span> {apt.supervisor_name || "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-text">الحالة:</span> {apt.case_title || "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-text">التاريخ:</span>{" "}
+                          {apt.appointment_date || apt.start_datetime
+                            ? new Date(apt.appointment_date || apt.start_datetime).toLocaleDateString("ar-SA")
+                            : "-"}
+                        </p>
+                      </div>
+                      <div className="mb-2">{getStatusBadge(apt.status)}</div>
+                      {apt.location && (
+                        <p className="text-caption text-muted">
+                          <span className="font-medium">الموقع:</span> {apt.location}
+                        </p>
+                      )}
+                    </Card>
                   </motion.div>
                 ))
               ) : (
-                <p className="text-center py-12 text-slate-500 dark:text-slate-400">
-                  {t("Appointments.noAppointments") || "لا توجد مواعيد"}
-                </p>
+                <DataTableEmpty>{emptyLabel}</DataTableEmpty>
               )}
             </div>
           )}
 
           {/* Details Modal */}
           {showDetails && selectedAppointment && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-              <div className="bg-white dark:bg-dark-light rounded-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700 shadow-xl">
-                <div className={`flex justify-between items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse" : ""}`}>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+              <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
+                <div className={`mb-6 flex items-center justify-between border-b border-border pb-4 ${isRtl ? "flex-row-reverse" : ""}`}>
+                  <h2 className="text-h3 text-text">
                     {t("Appointments.viewDetails") || "تفاصيل الموعد"}
                   </h2>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 px-0"
                     onClick={handleCloseDetails}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     aria-label="Close"
                   >
-                    <X size={20} className="text-slate-600 dark:text-slate-400" />
-                  </button>
+                    <X size={18} />
+                  </Button>
                 </div>
                 {loadingSelected ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <User className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.patient") || "المريض"}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">{selectedAppointment.patient_name || "-"}</p>
-                        </div>
-                      </div>
-                      <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <User className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.student") || "الطالب"}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">{selectedAppointment.student_name || "-"}</p>
-                        </div>
-                      </div>
-                      <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <FileText className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.case") || "الحالة"}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">{selectedAppointment.case_title || "-"}</p>
-                        </div>
-                      </div>
-                      <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <Calendar className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.date") || "التاريخ"}</p>
-                          <p className="font-bold text-slate-900 dark:text-white">
-                            {selectedAppointment.appointment_date || selectedAppointment.start_datetime
-                              ? new Date(selectedAppointment.appointment_date || selectedAppointment.start_datetime).toLocaleString("ar-SA", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "-"}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <DetailItem
+                        icon={User}
+                        label={t("Appointments.patient") || "المريض"}
+                        value={selectedAppointment.patient_name || "-"}
+                        isRtl={isRtl}
+                      />
+                      <DetailItem
+                        icon={User}
+                        label={t("Appointments.student") || "الطالب"}
+                        value={selectedAppointment.student_name || "-"}
+                        isRtl={isRtl}
+                      />
+                      <DetailItem
+                        icon={FileText}
+                        label={t("Appointments.case") || "الحالة"}
+                        value={selectedAppointment.case_title || "-"}
+                        isRtl={isRtl}
+                      />
+                      <DetailItem
+                        icon={Calendar}
+                        label={t("Appointments.date") || "التاريخ"}
+                        value={
+                          selectedAppointment.appointment_date || selectedAppointment.start_datetime
+                            ? new Date(
+                                selectedAppointment.appointment_date ||
+                                  selectedAppointment.start_datetime
+                              ).toLocaleString("ar-SA", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "-"
+                        }
+                        isRtl={isRtl}
+                      />
                       {selectedAppointment.duration_minutes && (
-                        <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          <Clock className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.duration") || "المدة"}</p>
-                            <p className="font-bold text-slate-900 dark:text-white">
-                              {selectedAppointment.duration_minutes} {t("Appointments.minutes") || "دقيقة"}
-                            </p>
-                          </div>
-                        </div>
+                        <DetailItem
+                          icon={Clock}
+                          label={t("Appointments.duration") || "المدة"}
+                          value={`${selectedAppointment.duration_minutes} ${t("Appointments.minutes") || "دقيقة"}`}
+                          isRtl={isRtl}
+                        />
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Appointments.status") || "الحالة"}</p>
+                        <p className="mb-2 text-caption font-semibold text-muted">
+                          {t("Appointments.status") || "الحالة"}
+                        </p>
                         <div>{getStatusBadge(selectedAppointment.status)}</div>
                       </div>
                       {selectedAppointment.location && (
-                        <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          <MapPin className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("Appointments.location") || "الموقع"}</p>
-                            <p className="font-bold text-slate-900 dark:text-white">{selectedAppointment.location}</p>
-                          </div>
-                        </div>
+                        <DetailItem
+                          icon={MapPin}
+                          label={t("Appointments.location") || "الموقع"}
+                          value={selectedAppointment.location}
+                          isRtl={isRtl}
+                        />
                       )}
                     </div>
                     {selectedAppointment.notes && (
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <MessageSquare className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Appointments.notes") || "ملاحظات"}</p>
-                          <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 p-4 rounded-lg leading-relaxed">{selectedAppointment.notes}</p>
+                        <MessageSquare className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-2 text-caption font-semibold text-muted">
+                            {t("Appointments.notes") || "ملاحظات"}
+                          </p>
+                          <p className="rounded-md border border-border bg-background p-4 text-body-sm text-text">
+                            {selectedAppointment.notes}
+                          </p>
                         </div>
                       </div>
                     )}
                     {selectedAppointment.description && (
                       <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                        <MessageSquare className="text-sky-600 dark:text-sky-400 mt-1 flex-shrink-0" size={20} />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("Appointments.description") || "الوصف"}</p>
-                          <p className="text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 p-4 rounded-lg leading-relaxed">{selectedAppointment.description}</p>
+                        <MessageSquare className="mt-1 shrink-0 text-primary" size={18} />
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-2 text-caption font-semibold text-muted">
+                            {t("Appointments.description") || "الوصف"}
+                          </p>
+                          <p className="rounded-md border border-border bg-background p-4 text-body-sm text-text">
+                            {selectedAppointment.description}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -534,6 +517,18 @@ function UniversityAppointmentsContent() {
   );
 }
 
+function DetailItem({ icon: Icon, label, value, isRtl }) {
+  return (
+    <div className={`flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
+      <Icon className="mt-1 shrink-0 text-primary" size={18} aria-hidden />
+      <div className="min-w-0 flex-1">
+        <p className="mb-1 text-caption font-semibold text-muted">{label}</p>
+        <p className="font-medium text-text">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function UniversityAppointmentsPage() {
   return (
     <RoleGuard allowedRoles={["university_admin"]}>
@@ -541,8 +536,3 @@ export default function UniversityAppointmentsPage() {
     </RoleGuard>
   );
 }
-
-
-
-
-

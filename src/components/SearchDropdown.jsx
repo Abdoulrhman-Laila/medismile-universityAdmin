@@ -2,76 +2,77 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, 
-  GraduationCap, 
-  Users, 
-  FileText, 
-  Calendar, 
+import {
+  Search,
+  GraduationCap,
+  Users,
+  FileText,
+  Calendar,
   Star,
-  X,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { unifiedSearch, highlightMatchReact } from "@/lib/searchUtils";
+import { useSearchData } from "@/hooks/useSearchData";
 import { useRtl } from "@/hooks/useRtl";
 
 /**
  * SearchDropdown Component
  * يعرض نتائج البحث في dropdown مع Highlighting
  */
-export default function SearchDropdown({ 
-  query, 
-  onClose, 
-  maxResults = 5 
+export default function SearchDropdown({
+  query,
+  onClose,
+  maxResults = 5,
 }) {
   const router = useRouter();
   const isRtl = useRtl();
   const dropdownRef = useRef(null);
-  
-  // جلب البيانات من Redux
-  const { students } = useSelector((state) => state.students);
-  const { supervisors } = useSelector((state) => state.supervisors);
-  const { cases } = useSelector((state) => state.clinicalCases);
-  const { appointments } = useSelector((state) => state.appointments);
-  const { evaluations } = useSelector((state) => state.evaluations);
+
+  // Prefetch + read searchable data from Redux
+  const {
+    students,
+    supervisors,
+    cases,
+    appointments,
+    evaluations,
+    loading: dataLoading,
+  } = useSearchData({ enabled: Boolean(query?.trim()) });
 
   const [results, setResults] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // البحث عند تغيير query
   useEffect(() => {
     if (!query || query.trim() === "") {
       setResults(null);
+      setIsSearching(false);
       return;
     }
 
-    setIsLoading(true);
-    
-    // استخدام debounce بسيط
+    setIsSearching(true);
+
     const timeoutId = setTimeout(() => {
       const searchResults = unifiedSearch(query, {
         students: students || [],
         supervisors: supervisors || [],
         cases: cases || [],
         appointments: appointments || [],
-        evaluations: evaluations || []
+        evaluations: evaluations || [],
       });
 
-      // أخذ أول maxResults من كل نوع
       const limitedResults = {
         students: searchResults.students.slice(0, maxResults),
         supervisors: searchResults.supervisors.slice(0, maxResults),
         cases: searchResults.cases.slice(0, maxResults),
         appointments: searchResults.appointments.slice(0, maxResults),
         evaluations: searchResults.evaluations.slice(0, maxResults),
-        total: Math.min(searchResults.total, maxResults * 5)
+        total: searchResults.total,
       };
 
       setResults(limitedResults);
-      setIsLoading(false);
-    }, 300);
+      setIsSearching(false);
+    }, 250);
 
     return () => clearTimeout(timeoutId);
   }, [query, students, supervisors, cases, appointments, evaluations, maxResults]);
@@ -88,16 +89,15 @@ export default function SearchDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // معالجة النقر على نتيجة
   const handleResultClick = (item, type) => {
     let route = "#";
-    
+
     switch (type) {
       case "student":
-        route = `/users/students?studentId=${item.id}`;
+        route = `/users/students?studentId=${item.id || item.user_id}`;
         break;
       case "supervisor":
-        route = `/users/supervisors?supervisorId=${item.id}`;
+        route = `/users/supervisors?supervisorId=${item.id || item.user_id}`;
         break;
       case "case":
         route = `/university-cases/${item.id}`;
@@ -116,13 +116,22 @@ export default function SearchDropdown({
     }
   };
 
-  // الحصول على عنوان العنصر
   const getItemTitle = (item, type) => {
     switch (type) {
       case "student":
-        return `${item.first_name || ""} ${item.last_name || ""}`.trim() || item.email || "-";
+        return (
+          item.studentName ||
+          `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+          item.email ||
+          "-"
+        );
       case "supervisor":
-        return `${item.first_name || ""} ${item.last_name || ""}`.trim() || item.email || "-";
+        return (
+          item.supervisorName ||
+          `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+          item.email ||
+          "-"
+        );
       case "case":
         return item.title || "-";
       case "appointment":
@@ -134,7 +143,6 @@ export default function SearchDropdown({
     }
   };
 
-  // الحصول على وصف العنصر
   const getItemSubtitle = (item, type) => {
     switch (type) {
       case "student":
@@ -152,45 +160,27 @@ export default function SearchDropdown({
     }
   };
 
-  // الحصول على أيقونة النوع
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case "student":
-        return GraduationCap;
-      case "supervisor":
-        return Users;
-      case "case":
-        return FileText;
-      case "appointment":
-        return Calendar;
-      case "evaluation":
-        return Star;
-      default:
-        return Search;
-    }
-  };
-
   if (!query || query.trim() === "") return null;
+
+  const isLoading = isSearching || dataLoading;
 
   return (
     <AnimatePresence>
       <motion.div
         ref={dropdownRef}
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        className={`absolute top-full left-0 right-0 mt-2 bg-white dark:bg-dark-light 
-          border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl
-          max-h-[500px] overflow-y-auto z-50
-          ${isRtl ? "text-right" : "text-left"}`}
+        exit={{ opacity: 0, y: -8 }}
+        className={`absolute inset-x-0 top-full z-50 mt-1 max-h-[480px] overflow-y-auto rounded-lg border border-border bg-surface shadow-lg ${
+          isRtl ? "text-right" : "text-left"
+        }`}
       >
-        {isLoading ? (
+        {isLoading && (!results || results.total === 0) ? (
           <div className="flex items-center justify-center p-8">
-            <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={24} />
+            <Loader2 className="h-6 w-6 animate-spin text-primary" size={24} />
           </div>
         ) : results && results.total > 0 ? (
           <div className="p-2">
-            {/* Students */}
             {results.students.length > 0 && (
               <ResultSection
                 title="الطلاب"
@@ -205,7 +195,6 @@ export default function SearchDropdown({
               />
             )}
 
-            {/* Supervisors */}
             {results.supervisors.length > 0 && (
               <ResultSection
                 title="المشرفين"
@@ -220,7 +209,6 @@ export default function SearchDropdown({
               />
             )}
 
-            {/* Cases */}
             {results.cases.length > 0 && (
               <ResultSection
                 title="الحالات"
@@ -235,7 +223,6 @@ export default function SearchDropdown({
               />
             )}
 
-            {/* Appointments */}
             {results.appointments.length > 0 && (
               <ResultSection
                 title="المواعيد"
@@ -250,7 +237,6 @@ export default function SearchDropdown({
               />
             )}
 
-            {/* Evaluations */}
             {results.evaluations.length > 0 && (
               <ResultSection
                 title="التقييمات"
@@ -265,15 +251,14 @@ export default function SearchDropdown({
               />
             )}
 
-            {/* View All Link */}
-            <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+            <div className="mt-1 border-t border-border pt-1">
               <button
+                type="button"
                 onClick={() => {
                   router.push(`/search?q=${encodeURIComponent(query)}`);
                   onClose();
                 }}
-                className="w-full px-4 py-2 text-sm font-semibold text-sky-600 dark:text-sky-400 
-                  hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
+                className="w-full rounded-md px-3 py-2 text-caption font-semibold text-primary transition-colors hover:bg-primary-muted"
               >
                 عرض جميع النتائج ({results.total})
               </button>
@@ -281,10 +266,8 @@ export default function SearchDropdown({
           </div>
         ) : (
           <div className="p-8 text-center">
-            <Search className="mx-auto text-slate-300 dark:text-slate-600 mb-2" size={32} />
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
-              لا توجد نتائج
-            </p>
+            <Search className="mx-auto mb-2 text-muted" size={28} />
+            <p className="text-body-sm text-muted">لا توجد نتائج</p>
           </div>
         )}
       </motion.div>
@@ -292,53 +275,52 @@ export default function SearchDropdown({
   );
 }
 
-/**
- * ResultSection Component
- * يعرض قسم من النتائج
- */
-function ResultSection({ 
-  title, 
-  icon: Icon, 
-  items, 
-  type, 
-  query, 
-  onItemClick, 
-  getItemTitle, 
+function ResultSection({
+  title,
+  icon: Icon,
+  items,
+  type,
+  query,
+  onItemClick,
+  getItemTitle,
   getItemSubtitle,
-  isRtl 
+  isRtl,
 }) {
   return (
-    <div className="mb-2">
-      <div className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold 
-        text-slate-500 dark:text-slate-400 uppercase ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-        <Icon size={14} />
+    <div className="mb-1">
+      <div
+        className={`flex items-center gap-2 px-3 py-2 text-caption font-semibold uppercase tracking-wide text-muted ${
+          isRtl ? "flex-row-reverse" : ""
+        }`}
+      >
+        <Icon size={14} className="text-primary" />
         <span>{title}</span>
-        <span className="ml-auto text-slate-400 dark:text-slate-500">({items.length})</span>
+        <span className="ms-auto text-muted">({items.length})</span>
       </div>
       {items.map((item) => {
-        const title = getItemTitle(item, type);
+        const itemTitle = getItemTitle(item, type);
         const subtitle = getItemSubtitle(item, type);
-        
+
         return (
-          <motion.div
-            key={item.id}
-            whileHover={{ backgroundColor: "rgba(14, 165, 233, 0.1)" }}
+          <button
+            type="button"
+            key={item.id || item.user_id}
             onClick={() => onItemClick(item, type)}
-            className={`px-3 py-2 rounded-lg cursor-pointer transition-colors
-              hover:bg-sky-50 dark:hover:bg-sky-900/20 ${isRtl ? "text-right" : "text-left"}`}
+            className={`w-full rounded-md px-3 py-2 text-start transition-colors hover:bg-primary-muted/60 ${
+              isRtl ? "text-right" : "text-left"
+            }`}
           >
-            <div className="font-medium text-slate-900 dark:text-white text-sm mb-0.5">
-              {highlightMatchReact(title, query)}
+            <div className="mb-0.5 text-body-sm font-medium text-text">
+              {highlightMatchReact(itemTitle, query)}
             </div>
-            {subtitle && (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
+            {subtitle ? (
+              <div className="text-caption text-muted">
                 {highlightMatchReact(subtitle, query)}
               </div>
-            )}
-          </motion.div>
+            ) : null}
+          </button>
         );
       })}
     </div>
   );
 }
-

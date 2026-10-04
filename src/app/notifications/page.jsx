@@ -16,7 +16,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Info,
-  ExternalLink,
 } from "lucide-react";
 import {
   fetchNotificationsAsync,
@@ -28,8 +27,26 @@ import {
   clearFilters,
 } from "../../redux/features/notifications/notificationsSlice";
 import AnimatedWrapper from "@/components/AnimatedWrapper";
+import {
+  Button,
+  Input,
+  Badge,
+  Card,
+  DataTableEmpty,
+  DataTableLoading,
+} from "@/components/ui";
 import toast from "react-hot-toast";
 import RoleGuard from "@/components/RoleGuard";
+
+const selectClass =
+  "h-10 w-full rounded-md border border-border bg-surface px-3 text-body-sm text-text " +
+  "focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25";
+
+const labelClass = "mb-1.5 block text-caption font-semibold text-muted";
+
+const fieldClass =
+  "w-full rounded-md border border-border bg-surface px-3 py-2.5 text-body-sm text-text " +
+  "placeholder:text-muted focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/25";
 
 export default function NotificationsPage() {
   return (
@@ -206,19 +223,19 @@ function NotificationsContent() {
     }
   };
 
-  // دالة للحصول على لون الأولوية
-  const getPriorityColor = (priority) => {
+  // دالة للحصول على variant الأولوية
+  const getPriorityVariant = (priority) => {
     switch (priority) {
       case "critical":
-        return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+        return "danger";
       case "high":
-        return "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800";
+        return "warning";
       case "normal":
-        return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
+        return "info";
       case "low":
-        return "text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700";
+        return "default";
       default:
-        return "text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700";
+        return "default";
     }
   };
 
@@ -249,45 +266,41 @@ function NotificationsContent() {
   const totalPages = Math.ceil(pagination.count / pageSize);
 
   if (!mounted) {
-    return <div className="p-4 min-h-screen bg-sky-50 dark:bg-dark"></div>;
+    return <div className="min-h-screen bg-background p-4"></div>;
   }
 
   return (
     <AnimatedWrapper>
       <div
-        className={`p-4 sm:p-6 lg:p-8 min-h-screen bg-sky-50 dark:bg-dark ${
+        className={`min-h-screen bg-background p-4 sm:p-6 lg:p-8 ${
           isRtl ? "text-right" : "text-left"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto">
+        <div className="mx-auto max-w-[1400px] space-y-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${isRtl ? "sm:flex-row-reverse" : ""}`}>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                  {t("Notifications.title")}
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-                  {t("Notifications.description")}
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowForm(true)}
-                className={`flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-xl transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md ${isRtl ? "flex-row-reverse" : ""}`}
-              >
-                <PlusCircle size={18} />
-                <span>{t("Notifications.createNotification")}</span>
-              </motion.button>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <h1 className="text-h1 text-text">
+                {t("Notifications.title")}
+              </h1>
+              <p className="text-body-sm text-text-secondary">
+                {t("Notifications.description")}
+              </p>
             </div>
+            <Button
+              onClick={() => setShowForm(true)}
+              className="shrink-0 self-start sm:self-auto"
+            >
+              <PlusCircle size={18} />
+              {t("Notifications.createNotification")}
+            </Button>
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-light rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className={`flex flex-wrap gap-4 items-end ${isRtl ? "flex-row-reverse" : ""}`}>
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          <Card padding className="!p-4 sm:!p-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className={labelClass}>
                   {t("Notifications.table.read")}
                 </label>
                 <select
@@ -297,15 +310,15 @@ function NotificationsContent() {
                     dispatch(setFilters({ is_read: value }));
                     setCurrentPage(1);
                   }}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all")}</option>
                   <option value="read">{t("Notifications.read")}</option>
                   <option value="unread">{t("Notifications.unread")}</option>
                 </select>
               </div>
-              <div className="min-w-[150px]">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <div>
+                <label className={labelClass}>
                   {t("Notifications.table.status")}
                 </label>
                 <select
@@ -315,7 +328,7 @@ function NotificationsContent() {
                     dispatch(setFilters({ status: value }));
                     setCurrentPage(1);
                   }}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                  className={selectClass}
                 >
                   <option value="all">{t("actions.all")}</option>
                   <option value="pending">{t("Notifications.pending")}</option>
@@ -324,129 +337,140 @@ function NotificationsContent() {
                 </select>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Loading State */}
-          {loading && notifications.length === 0 && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
-            </div>
-          )}
+          {loading && notifications.length === 0 && <DataTableLoading />}
 
           {/* Notifications List */}
           {!loading && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {notifications.length === 0 ? (
-                <div className="bg-white dark:bg-dark-light rounded-xl p-12 text-center border border-sky-200 dark:border-slate-700">
-                  <Bell size={48} className="mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <p className="text-sky-600 dark:text-sky-400 text-lg">
+                <DataTableEmpty>
+                  <Bell size={40} className="mx-auto mb-3 text-muted" />
+                  <p className="text-body-sm text-muted">
                     {t("Notifications.noNotifications")}
                   </p>
-                </div>
+                </DataTableEmpty>
               ) : (
                 <>
-                  {notifications.map((notification) => (
+                  {notifications.map((notification, idx) => (
                     <motion.div
                       key={notification.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`bg-white dark:bg-dark-light rounded-xl p-5 border-2 transition ${
-                        notification.is_read
-                          ? "border-slate-200 dark:border-slate-700"
-                          : "border-sky-500 dark:border-sky-400"
-                      }`}
+                      transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.2) }}
                     >
-                      <div className={`flex flex-col sm:flex-row justify-between gap-4 ${isRtl ? "sm:flex-row-reverse" : ""}`}>
-                        <div className="flex-1">
-                          <div className={`flex items-start gap-3 mb-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-                            {!notification.is_read && (
-                              <div className="w-2 h-2 bg-sky-500 rounded-full mt-2 flex-shrink-0"></div>
-                            )}
-                            <div className="flex-1">
-                              <div className={`flex items-center gap-2 mb-2 flex-wrap ${isRtl ? "flex-row-reverse" : ""}`}>
-                                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                                  {notification.title || "-"}
-                                </h3>
-                                {notification.priority && (
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1 ${getPriorityColor(notification.priority)}`}>
-                                    {getPriorityIcon(notification.priority)}
-                                    {t(`Notifications.priority.${notification.priority}`) || notification.priority}
-                                  </span>
-                                )}
-                                {notification.notification_type && (
-                                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                    {t(`Notifications.types.${notification.notification_type}`) || notification.notification_type}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                {notification.message || "-"}
-                              </p>
-                              <div className={`flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 ${isRtl ? "flex-row-reverse" : ""}`}>
-                                <span>
-                                  <strong>{t("Notifications.table.date")}:</strong> {formatDateTime(notification.created_at)}
-                                </span>
-                                {notification.sender_name && (
+                      <Card
+                        className={`!p-4 sm:!p-5 transition-colors ${
+                          notification.is_read
+                            ? "border-border"
+                            : "border-primary/50 bg-primary-muted/20"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className={`mb-2 flex items-start gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
+                              {!notification.is_read && (
+                                <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <div className={`mb-2 flex flex-wrap items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                  <h3 className="text-h3 text-text">
+                                    {notification.title || "-"}
+                                  </h3>
+                                  {notification.priority && (
+                                    <Badge variant={getPriorityVariant(notification.priority)}>
+                                      {getPriorityIcon(notification.priority)}
+                                      {t(`Notifications.priority.${notification.priority}`) || notification.priority}
+                                    </Badge>
+                                  )}
+                                  {notification.notification_type && (
+                                    <Badge variant="default">
+                                      {t(`Notifications.types.${notification.notification_type}`) || notification.notification_type}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="mb-2 text-body-sm text-text-secondary">
+                                  {notification.message || "-"}
+                                </p>
+                                <div className={`flex flex-wrap gap-x-4 gap-y-1 text-caption text-muted ${isRtl ? "flex-row-reverse" : ""}`}>
                                   <span>
-                                    <strong>{t("Notifications.table.sender")}:</strong> {notification.sender_name}
+                                    <strong className="text-text-secondary">{t("Notifications.table.date")}:</strong>{" "}
+                                    {formatDateTime(notification.created_at)}
                                   </span>
-                                )}
-                                {notification.target_type && notification.target_object_id && (
-                                  <span className="flex items-center gap-1">
-                                    <strong>{t(`Notifications.targetType.${notification.target_type}`) || notification.target_type}:</strong>
-                                    <span className="text-sky-600 dark:text-sky-400">{notification.target_object_id.substring(0, 8)}...</span>
-                                  </span>
-                                )}
+                                  {notification.sender_name && (
+                                    <span>
+                                      <strong className="text-text-secondary">{t("Notifications.table.sender")}:</strong>{" "}
+                                      {notification.sender_name}
+                                    </span>
+                                  )}
+                                  {notification.target_type && notification.target_object_id && (
+                                    <span>
+                                      <strong className="text-text-secondary">
+                                        {t(`Notifications.targetType.${notification.target_type}`) || notification.target_type}:
+                                      </strong>{" "}
+                                      <span className="text-primary">
+                                        {notification.target_object_id.substring(0, 8)}...
+                                      </span>
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
+                          <div className="flex shrink-0 flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleViewDetails(notification.id)}
+                            >
+                              <Eye size={16} />
+                              {t("Notifications.viewDetails")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={notification.is_read ? "outline" : "ghost"}
+                              onClick={() => handleToggleRead(notification.id, notification.is_read)}
+                              className={
+                                !notification.is_read
+                                  ? "bg-info/10 text-info hover:bg-info/15"
+                                  : undefined
+                              }
+                            >
+                              <CheckCircle size={16} />
+                              {notification.is_read ? t("Notifications.markAsUnread") : t("Notifications.markAsRead")}
+                            </Button>
+                          </div>
                         </div>
-                        <div className={`flex gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
-                          <button
-                            onClick={() => handleViewDetails(notification.id)}
-                            className={`px-4 py-2 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-all duration-200 text-sm flex items-center gap-1.5 font-medium ${isRtl ? "flex-row-reverse" : ""}`}
-                          >
-                            <Eye size={16} />
-                            {t("Notifications.viewDetails")}
-                          </button>
-                          <button
-                            onClick={() => handleToggleRead(notification.id, notification.is_read)}
-                            className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm flex items-center gap-1.5 font-medium ${
-                              notification.is_read
-                                ? "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
-                                : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                            } ${isRtl ? "flex-row-reverse" : ""}`}
-                          >
-                            <CheckCircle size={16} />
-                            {notification.is_read ? t("Notifications.markAsUnread") : t("Notifications.markAsRead")}
-                          </button>
-                        </div>
-                      </div>
+                      </Card>
                     </motion.div>
                   ))}
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className={`flex justify-center items-center gap-2 mt-6 ${isRtl ? "flex-row-reverse" : ""}`}>
-                      <button
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                         disabled={!pagination.previous || currentPage === 1}
-                        className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-light text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1.5"
                       >
                         <ChevronLeft size={16} />
                         {t("actions.previous") || "السابق"}
-                      </button>
-                      <span className="px-4 py-2 text-slate-700 dark:text-slate-300">
+                      </Button>
+                      <span className="px-3 py-2 text-body-sm text-text-secondary tabular-nums">
                         {t("actions.page") || "صفحة"} {currentPage} {t("actions.of") || "من"} {totalPages}
                       </span>
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                         disabled={!pagination.next || currentPage === totalPages}
-                        className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-light text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1.5"
                       >
                         {t("actions.next") || "التالي"}
                         <ChevronRight size={16} />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </>
@@ -456,96 +480,102 @@ function NotificationsContent() {
 
           {/* Details Modal */}
           {showDetails && selectedNotification && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-              <div className="bg-white dark:bg-dark-light rounded-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700 shadow-xl">
-                <div className={`flex justify-between items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse" : ""}`}>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+              <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
+                <div className={`mb-6 flex items-center justify-between border-b border-border pb-4 ${isRtl ? "flex-row-reverse" : ""}`}>
+                  <h2 className="text-h3 text-text">
                     {t("Notifications.viewDetails")}
                   </h2>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 px-0"
                     onClick={() => setShowDetails(null)}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    aria-label="Close"
                   >
-                    <X size={20} className="text-slate-600 dark:text-slate-400" />
-                  </button>
+                    <X size={18} />
+                  </Button>
                 </div>
                 {loadingSelected ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="animate-spin text-sky-600 dark:text-sky-400" size={32} />
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" size={32} />
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                      <p className="mb-1 text-caption font-semibold text-muted">
                         {t("Notifications.table.title")}
                       </p>
-                      <p className="font-bold text-slate-900 dark:text-white">{selectedNotification.title || "-"}</p>
+                      <p className="font-medium text-text">{selectedNotification.title || "-"}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                      <p className="mb-1 text-caption font-semibold text-muted">
                         {t("Notifications.table.message")}
                       </p>
-                      <p className="text-slate-900 dark:text-white">{selectedNotification.message || "-"}</p>
+                      <p className="text-body-sm text-text">{selectedNotification.message || "-"}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                      <p className="mb-1 text-caption font-semibold text-muted">
                         {t("Notifications.table.date")}
                       </p>
-                      <p className="text-slate-900 dark:text-white">{formatDateTime(selectedNotification.created_at)}</p>
+                      <p className="text-body-sm text-text tabular-nums">{formatDateTime(selectedNotification.created_at)}</p>
                     </div>
                     {selectedNotification.sender_name && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.table.sender")}
                         </p>
-                        <p className="text-slate-900 dark:text-white">{selectedNotification.sender_name}</p>
+                        <p className="text-body-sm text-text">{selectedNotification.sender_name}</p>
                       </div>
                     )}
                     {selectedNotification.notification_type && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.table.type")}
                         </p>
-                        <p className="text-slate-900 dark:text-white">
+                        <Badge variant="default">
                           {t(`Notifications.types.${selectedNotification.notification_type}`) || selectedNotification.notification_type}
-                        </p>
+                        </Badge>
                       </div>
                     )}
                     {selectedNotification.priority && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.priorityLabel")}
                         </p>
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(selectedNotification.priority)}`}>
+                        <Badge variant={getPriorityVariant(selectedNotification.priority)}>
                           {getPriorityIcon(selectedNotification.priority)}
                           {t(`Notifications.priority.${selectedNotification.priority}`) || selectedNotification.priority}
-                        </span>
+                        </Badge>
                       </div>
                     )}
                     {selectedNotification.target_type && selectedNotification.target_object_id && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.targetObject")}
                         </p>
-                        <p className="text-slate-900 dark:text-white">
-                          <strong>{t(`Notifications.targetType.${selectedNotification.target_type}`) || selectedNotification.target_type}:</strong> {selectedNotification.target_object_id}
+                        <p className="text-body-sm text-text">
+                          <strong>
+                            {t(`Notifications.targetType.${selectedNotification.target_type}`) || selectedNotification.target_type}:
+                          </strong>{" "}
+                          {selectedNotification.target_object_id}
                         </p>
                       </div>
                     )}
                     {selectedNotification.appointment_id && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.table.appointment")}
                         </p>
-                        <p className="text-slate-900 dark:text-white">{selectedNotification.appointment_id}</p>
+                        <p className="text-body-sm text-text">{selectedNotification.appointment_id}</p>
                       </div>
                     )}
                     {selectedNotification.proposed_changes && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                        <p className="mb-1 text-caption font-semibold text-muted">
                           {t("Notifications.form.proposedChanges")}
                         </p>
-                        <pre className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-xs text-slate-900 dark:text-white overflow-x-auto border border-slate-200 dark:border-slate-700">
+                        <pre className="overflow-x-auto rounded-md border border-border bg-background p-3 text-caption text-text">
                           {typeof selectedNotification.proposed_changes === "object" 
                             ? JSON.stringify(selectedNotification.proposed_changes, null, 2)
                             : selectedNotification.proposed_changes}
@@ -560,29 +590,32 @@ function NotificationsContent() {
 
           {/* Create Notification Modal */}
           {showForm && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
-              <div className="bg-white dark:bg-dark-light rounded-xl p-5 sm:p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-xl">
-                <div className={`flex justify-between items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse" : ""}`}>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+              <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
+                <div className={`mb-6 flex items-center justify-between border-b border-border pb-4 ${isRtl ? "flex-row-reverse" : ""}`}>
+                  <h2 className="text-h3 text-text">
                     {t("Notifications.createTitle")}
                   </h2>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 px-0"
                     onClick={() => setShowForm(false)}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    aria-label="Close"
                   >
-                    <X size={20} className="text-slate-600 dark:text-slate-400" />
-                  </button>
+                    <X size={18} />
+                  </Button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
-                      {t("Notifications.form.notificationType")} <span className="text-red-500">*</span>
+                    <label className={labelClass}>
+                      {t("Notifications.form.notificationType")} <span className="text-danger">*</span>
                     </label>
                     <select
                       value={formData.notification_type}
                       onChange={(e) => setFormData({ ...formData, notification_type: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                      className={selectClass}
                     >
                       {adminNotificationTypes.map((type) => (
                         <option key={type.value} value={type.value}>
@@ -592,13 +625,13 @@ function NotificationsContent() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                    <label className={labelClass}>
                       {t("Notifications.priorityLabel")}
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                      className={selectClass}
                     >
                       <option value="low">{t("Notifications.priority.low")}</option>
                       <option value="normal">{t("Notifications.priority.normal")}</option>
@@ -607,37 +640,36 @@ function NotificationsContent() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
-                      {t("Notifications.form.title")} <span className="text-red-500">*</span>
+                    <label className={labelClass}>
+                      {t("Notifications.form.title")} <span className="text-danger">*</span>
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
-                      {t("Notifications.form.message")} <span className="text-red-500">*</span>
+                    <label className={labelClass}>
+                      {t("Notifications.form.message")} <span className="text-danger">*</span>
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                       rows={4}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200 resize-none"
+                      className={`${fieldClass} resize-none`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                    <label className={labelClass}>
                       {t("Notifications.form.targetType")}
                     </label>
                     <select
                       value={formData.target_type}
                       onChange={(e) => setFormData({ ...formData, target_type: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
+                      className={selectClass}
                     >
                       <option value="">{t("actions.all")} - {t("Notifications.form.selectTargetType")}</option>
                       <option value="report">{t("Notifications.targetType.report")}</option>
@@ -649,20 +681,19 @@ function NotificationsContent() {
                   </div>
                   {formData.target_type && (
                     <div>
-                      <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                      <label className={labelClass}>
                         {t("Notifications.form.targetId")}
                       </label>
-                      <input
+                      <Input
                         type="text"
                         value={formData.target_id}
                         onChange={(e) => setFormData({ ...formData, target_id: e.target.value })}
                         placeholder={t("Notifications.form.targetIdPlaceholder")}
-                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200"
                       />
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                    <label className={labelClass}>
                       {t("Notifications.form.proposedChanges")}
                     </label>
                     <textarea
@@ -670,26 +701,23 @@ function NotificationsContent() {
                       onChange={(e) => setFormData({ ...formData, proposed_changes: e.target.value })}
                       placeholder={t("Notifications.form.proposedChangesPlaceholder")}
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white dark:bg-dark text-slate-900 dark:text-white transition-all duration-200 resize-none font-mono text-xs"
+                      className={`${fieldClass} resize-none font-mono text-caption`}
                     />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="mt-1 text-caption text-muted">
                       {t("Notifications.form.proposedChangesHint")}
                     </p>
                   </div>
-                  <div className={`flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700 ${isRtl ? "flex-row-reverse justify-start" : "justify-end"}`}>
-                    <button
+                  <div className={`flex gap-3 border-t border-border pt-4 ${isRtl ? "flex-row-reverse justify-start" : "justify-end"}`}>
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => setShowForm(false)}
-                      className="px-5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-semibold text-sm"
                     >
                       {t("actions.cancel")}
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-lg transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-md"
-                    >
+                    </Button>
+                    <Button type="submit">
                       {t("actions.save")}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -700,5 +728,3 @@ function NotificationsContent() {
     </AnimatedWrapper>
   );
 }
-
-
